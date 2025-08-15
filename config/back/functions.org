@@ -1,0 +1,39 @@
+#+TITLE: functions.org
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+
+* Limpieza automática de archivos viejos
+#+begin_src emacs-lisp
+(defun my/delete-old-files (dir days)
+  "Borra archivos en DIR más viejos que DAYS días."
+  (let* ((seconds (* days 24 60 60))
+         (now (float-time (current-time))))
+    (when (file-directory-p dir)
+      (dolist (file (directory-files dir t "\\`[^.]"))
+        (when (and (file-regular-p file)
+                   (> (- now (float-time (nth 5 (file-attributes file))))
+                      seconds))
+          (message "Borrando archivo viejo: %s" file)
+          (delete-file file))))))
+
+;; Carpetas a limpiar y tiempo (en días)
+(let ((carpetas '( "~/.emacs.d/undo"
+                   "~/.emacs.d/auto-save-list"
+                   "~/.emacs.d/elpa/archives"
+                   "~/.emacs.d/savehist"))
+      (dias 180))
+  (dolist (dir carpetas)
+    (my/delete-old-files (expand-file-name dir) dias)))
+
+;; Limpia .elc obsoletos en config/ (evita errores raros de byte-compiled)
+(let ((cfg (expand-file-name "config" user-emacs-directory)))
+  (when (file-directory-p cfg)
+    (dolist (f (directory-files-recursively cfg "\\.elc\\'"))
+      (message "Eliminando .elc obsoleto: %s" f)
+      (ignore-errors (delete-file f)))))
+#+end_src
+
+* Confirmación
+#+begin_src emacs-lisp
+(message "functions.org cargado")
+#+end_src
+

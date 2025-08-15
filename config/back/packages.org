@@ -1,0 +1,260 @@
+#+TITLE: packages.org
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+
+* Gestión de paquetes
+#+begin_src emacs-lisp
+(straight-use-package 'use-package)
+(setq use-package-verbose t)
+#+end_src
+
+** try (opcional)
+#+begin_src emacs-lisp
+(use-package try)
+#+end_src
+
+** multiple-cursors
+#+begin_src emacs-lisp
+(use-package multiple-cursors
+  :bind (("C-M-<down>"  . mc/mark-next-lines)
+         ("C-M-<up>"    . mc/mark-previous-lines)
+         ("M-<mouse-1>" . mc/add-cursor-on-click)
+         ("C-;"         . mc/mark-all-dwim))
+  :config
+  (global-set-key (kbd "<escape>") 'mc/keyboard-quit))
+#+end_src
+
+** expand-region (mover a C-= para no pisar M-w)
+#+begin_src emacs-lisp
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
+#+end_src
+
+** undo-tree (historial visual)
+#+begin_src emacs-lisp
+(use-package undo-tree
+  :init
+  (global-undo-tree-mode)
+  :config
+  (let ((undo-dir (expand-file-name "undo" user-emacs-directory)))
+    (unless (file-directory-p undo-dir)
+      (make-directory undo-dir t)))
+  (setq undo-tree-history-directory-alist `(("." . ,(expand-file-name "undo" user-emacs-directory)))
+        undo-tree-auto-save-history t)
+  (add-to-list 'display-buffer-alist
+               '("\\*undo-tree\\*"
+                 (display-buffer-in-side-window)
+                 (side . right) (window-width . 0.33) (slot . 0)))
+  (global-set-key (kbd "C-c z") 'undo-tree-undo)
+  (global-set-key (kbd "C-c Z") 'undo-tree-redo)
+  (global-set-key (kbd "C-c u") 'undo-tree-visualize))
+#+end_src
+
+** Ivy / Counsel / Swiper / Ivy-rich
+#+begin_src emacs-lisp
+(use-package ivy
+  :demand t
+  :diminish
+  :bind (("C-s"     . swiper)
+         ("C-c C-r" . ivy-resume))
+  :config
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t
+        ivy-count-format "(%d/%d) "
+        enable-recursive-minibuffers t
+        ivy-height 15))
+
+
+(use-package counsel
+  :after ivy
+  :demand t
+  :init
+  (global-set-key [remap execute-extended-command] #'counsel-M-x)
+  :bind (("M-x"     . counsel-M-x)
+         ("C-x C-f" . counsel-find-file)
+         ("C-x b"   . counsel-switch-buffer)
+         ("M-y"     . counsel-yank-pop))
+  :config
+  (counsel-mode 1))
+
+(use-package swiper :after ivy)
+
+(use-package ivy-rich
+  :after ivy
+  :init (ivy-rich-mode 1))
+#+end_src
+
+** which-key
+#+begin_src emacs-lisp
+(use-package which-key
+  :diminish
+  :config
+  (which-key-mode)
+  (setq which-key-idle-delay 0.3
+        which-key-popup-type 'side-window
+        which-key-side-window-location 'bottom
+        which-key-side-window-max-height 0.25))
+#+end_src
+
+** helpful (integración con counsel)
+#+begin_src emacs-lisp
+(use-package helpful
+  :commands (helpful-callable helpful-variable helpful-key helpful-command)
+  :init
+  (with-eval-after-load 'counsel
+    (setq counsel-describe-function-function #'helpful-callable
+          counsel-describe-variable-function #'helpful-variable))
+  :bind
+  ([remap describe-function] . helpful-function)
+  ([remap describe-symbol]   . helpful-symbol)
+  ([remap describe-variable] . helpful-variable)
+  ([remap describe-command]  . helpful-command)
+  ([remap describe-key]      . helpful-key)
+  ("C-h f" . helpful-callable)
+  ("C-h v" . helpful-variable)
+  ("C-h k" . helpful-key)
+  ("C-h x" . helpful-command))
+#+end_src
+
+** ace-window
+#+begin_src emacs-lisp
+(use-package ace-window
+  :bind ([remap other-window] . ace-window)
+  :custom-face
+  (aw-leading-char-face ((t (:height 3.0 :weight bold)))))
+#+end_src
+
+** Projectile
+#+begin_src emacs-lisp
+(use-package projectile
+  :init  (projectile-mode 1)
+  :custom
+  (projectile-project-search-path '("~/Proyectos/" "~/Sandbox/"))
+  (projectile-enable-caching t)
+  (projectile-indexing-method 'alien)
+  (projectile-generic-command "rg --files --hidden --follow -g '!.git/'")
+  :bind-keymap ("C-c p" . projectile-command-map)
+  :config
+  (defun cs/-file-mod-time (f) (nth 5 (file-attributes f)))
+  (defun cs/projectile-sort-files-by-mod-time (files)
+    (sort files (lambda (a b)
+                  (time-less-p (cs/-file-mod-time b)
+                               (cs/-file-mod-time a)))))
+  (defun cs/projectile-find-file ()
+    (interactive)
+    (let* ((all (projectile-current-project-files))
+           (clean (seq-remove (lambda (f)
+                                (string-prefix-p "." (file-name-nondirectory f)))
+                              all))
+           (sorted (cs/projectile-sort-files-by-mod-time clean)))
+      (projectile-completing-read "Find file: " sorted)))
+  (define-key projectile-command-map (kbd "f") #'cs/projectile-find-file))
+#+end_src
+
+** Treemacs
+#+begin_src emacs-lisp
+(use-package treemacs
+  :defer t
+  :custom
+  (treemacs-width 35)
+  (treemacs-position 'left)
+  (treemacs-select-when-already-in-tree t)
+  :config
+  ;; Modos recomendados
+  (treemacs-follow-mode t)             ; seguir el archivo actual
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode 'always)
+
+  ;; Git integration: extended si hay git+python3, simple si solo git, none si nada
+  (cond
+   ((and (executable-find "git") (executable-find "python3"))
+    (treemacs-git-mode 'extended))
+   ((executable-find "git")
+    (treemacs-git-mode 'simple))
+   (t
+    (treemacs-git-mode 'none))))
+
+(use-package treemacs-projectile
+  :after (treemacs projectile))
+
+(use-package treemacs-magit
+  :after (treemacs magit))
+
+;; Tema de íconos: Nerd Icons (evitamos all-the-icons para no pisar temas)
+(use-package treemacs-nerd-icons
+  :after treemacs
+  :config (treemacs-load-theme "nerd-icons"))
+
+;; --- Funciones auxiliares ---
+(defun jinxx/treemacs--ensure-project-added ()
+  "Asegura que el proyecto actual de Projectile esté en el workspace de Treemacs."
+  (when (and (fboundp 'projectile-project-root)
+             (projectile-project-p))
+    (let* ((root (directory-file-name (projectile-project-root)))
+           (_ws  (treemacs-current-workspace)))
+      (unless (treemacs-is-path-in-workspace? root)
+        (treemacs-do-add-project-to-workspace
+         root (file-name-nondirectory root))))))
+
+(defun jinxx/treemacs-reveal-current-file ()
+  "Revela y resalta el archivo del buffer actual en Treemacs si está visible."
+  (when (and (buffer-file-name)
+             (memq (treemacs-current-visibility) '(visible exists)))
+    (jinxx/treemacs--ensure-project-added)
+    (treemacs-find-file)))
+
+(defun jinxx/treemacs-toggle-and-reveal ()
+  "Abre/cierra Treemacs. Al abrir, resalta el archivo del buffer actual."
+  (interactive)
+  (if (eq (treemacs-current-visibility) 'visible)
+      (treemacs)                         ; cierra si está abierto
+    (progn
+      (treemacs)                         ; abre
+      (jinxx/treemacs-reveal-current-file))))
+
+(defun jinxx/treemacs-open-and-reveal ()
+  "Asegura Treemacs abierto y revela el archivo actual (no lo cierra nunca)."
+  (interactive)
+  (unless (eq (treemacs-current-visibility) 'visible)
+    (treemacs))
+  (jinxx/treemacs-reveal-current-file))
+
+;; --- Integración con Projectile: al cambiar de proyecto, abrir y revelar ---
+(add-hook 'projectile-after-switch-project-hook
+          (lambda ()
+            (unless (eq (treemacs-current-visibility) 'visible)
+              (treemacs))
+            (jinxx/treemacs-reveal-current-file)))
+
+;; --- Teclas ---
+;; Si usás winum, libera M-1 para que no choque con selección de ventanas
+(with-eval-after-load 'winum
+  (define-key winum-keymap (kbd "M-1") nil)
+  ;; Mantener M-0 para saltar a la ventana de Treemacs si querés
+  (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+
+;; Toggle principal pedido: M-1
+(global-set-key (kbd "M-1") #'jinxx/treemacs-toggle-and-reveal)
+
+;; Binding extra "abrir y revelar" seguro: C-c t t
+(global-set-key (kbd "C-c t t") #'jinxx/treemacs-open-and-reveal)
+
+;; (Opcional) tamaño de íconos
+(with-eval-after-load 'treemacs
+  (when (fboundp 'treemacs-resize-icons)
+    (treemacs-resize-icons 16)))
+
+#+end_src
+
+** hungry-delete (solo texto/código)
+#+begin_src emacs-lisp
+(use-package hungry-delete
+  :hook ((text-mode prog-mode conf-mode) . hungry-delete-mode)
+  :config
+  (setq hungry-delete-join-reluctantly t))
+#+end_src
+
+* Confirmación
+#+begin_src emacs-lisp
+(message "packages.org finalizado")
+#+end_src
+

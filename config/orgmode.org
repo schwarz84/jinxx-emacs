@@ -1,0 +1,8 @@
+#+TITLE: orgmode.org
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+
+* Confirmación
+#+begin_src emacs-lisp
+(message "orgmode.org cargado")
+#+end_src
+

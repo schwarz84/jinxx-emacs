@@ -1,0 +1,135 @@
+#+TITLE: core.org
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+
+* Paquetes (bootstrap: straight.el + use-package)
+#+begin_src emacs-lisp
+(defvar bootstrap-version)
+(let* ((bootstrap-file (expand-file-name
+                        "straight/repos/straight.el/bootstrap.el"
+                        user-emacs-directory))
+       (bootstrap-version 6)
+       (install-url
+        "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer (url-retrieve-synchronously install-url 'silent 'inhibit-cookies)
+      (goto-char (point-min))
+      (re-search-forward "\n\n")
+      (eval-region (point) (point-max))))
+  (load bootstrap-file nil 'nomessage))
+
+(setq straight-use-package-by-default t
+      straight-vc-git-default-clone-depth 1
+      straight-check-for-modifications '(find-when-checking)
+      straight-disable-native-compile t)
+
+(straight-use-package 'use-package)
+
+(setq use-package-always-defer t
+      use-package-expand-minimally t
+      use-package-verbose nil)
+#+end_src
+
+* Rendimiento y limpieza
+#+begin_src emacs-lisp
+(use-package gcmh
+  :hook (after-init . gcmh-mode)
+  :init
+  (setq gcmh-high-cons-threshold (* 64 1024 1024)
+        gcmh-idle-delay 0.5
+        gcmh-verbose nil))
+
+(use-package no-littering
+  :init
+  (setq no-littering-etc-directory (expand-file-name "etc/" user-emacs-directory)
+        no-littering-var-directory (expand-file-name "var/" user-emacs-directory)))
+#+end_src
+
+* Autosaves fuera del repo
+#+begin_src emacs-lisp
+;; Enviá los #archivo# y la lista de autosaves a ~/.emacs.d/var/
+(let ((as-dir   (expand-file-name "var/auto-save/"       user-emacs-directory))
+      (list-dir (expand-file-name "var/auto-save-list/"  user-emacs-directory)))
+  (make-directory as-dir t)
+  (make-directory list-dir t)
+  (setq auto-save-file-name-transforms `((".*" ,as-dir t))
+        auto-save-list-file-prefix (expand-file-name ".saves-" list-dir)))
+#+end_src
+
+* Historial y archivos recientes
+#+begin_src emacs-lisp
+(save-place-mode 1)
+(savehist-mode 1)
+(recentf-mode 1)
+
+(setq history-length 500
+      savehist-file (expand-file-name "savehist" user-emacs-directory)
+      recentf-save-file (expand-file-name "recentf" user-emacs-directory)
+      recentf-max-saved-items 300
+      recentf-auto-cleanup 'never
+      recentf-exclude '("^/tmp/" "/TAGS\\'" "bookmarks\\'" "\\.gz\\'" "/var/folders/")
+      savehist-additional-variables '(search-ring regexp-search-ring kill-ring))
+#+end_src
+
+* Comportamiento general recomendado
+#+begin_src emacs-lisp
+(setq require-final-newline t
+      use-short-answers   t
+      create-lockfiles    nil
+      make-backup-files   t
+      version-control     t
+      delete-old-versions t
+      kept-new-versions   6
+      kept-old-versions   2)
+
+(global-auto-revert-mode 1)
+(electric-pair-mode 1)
+#+end_src
+
+* Codificación UTF-8 global
+#+begin_src emacs-lisp
+(prefer-coding-system        'utf-8)
+(set-default-coding-systems  'utf-8)
+(set-terminal-coding-system  'utf-8)
+(set-keyboard-coding-system  'utf-8)
+(setq locale-coding-system   'utf-8)
+#+end_src
+
+* Minibuffer, búsqueda y ayuda (setup mínimo)
+#+begin_src emacs-lisp
+(use-package which-key
+  :hook (after-init . which-key-mode)
+  :init (setq which-key-idle-delay 0.30
+              which-key-max-description-length 35
+              which-key-separator " → "))
+
+(use-package ivy
+  :init (setq ivy-use-virtual-buffers t
+              ivy-count-format "%d/%d "
+              enable-recursive-minibuffers t)
+  :config (ivy-mode 1))
+
+(use-package counsel
+  :after ivy
+  :config (counsel-mode 1))
+
+(use-package swiper
+  :after ivy)
+
+(use-package ivy-prescient
+  :after (ivy counsel)
+  :config
+  (ivy-prescient-mode 1)
+  (prescient-persist-mode 1))
+#+end_src
+
+* Teclado y ventanas
+#+begin_src emacs-lisp
+(setq shift-select-mode t)
+(windmove-default-keybindings 'control) ;; C-<flechas>
+#+end_src
+
+* Confirmación de carga
+#+begin_src emacs-lisp
+(message "core.org cargado correctamente")
+#+end_src
+

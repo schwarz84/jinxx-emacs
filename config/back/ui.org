@@ -1,0 +1,109 @@
+#+TITLE: ui.org
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+
+* Apariencia global
+#+begin_src emacs-lisp
+(setq-default line-spacing 0.2
+              cursor-type 'bar)
+
+(column-number-mode 1)
+(global-hl-line-mode 1)
+(set-fringe-mode 10)
+
+(let ((jb "JetBrains Mono"))
+  (when (member jb (font-family-list))
+    (set-face-attribute 'default nil :font jb :height 110)))
+#+end_src
+
+* Modeline ligero
+#+begin_src emacs-lisp
+(column-number-mode t) (line-number-mode t)
+(set-face-attribute 'mode-line nil :height 100)
+(set-face-attribute 'mode-line-inactive nil :height 100)
+(use-package minions :config (minions-mode 1))
+#+end_src
+
+* Tema y ligaduras (sin iconos globales)
+#+begin_src emacs-lisp
+(use-package gruvbox-theme
+  :init (load-theme 'gruvbox-dark-hard t)
+  :config
+  ;; Ajuste de paréntesis DESPUÉS del tema
+  (set-face-attribute 'show-paren-match nil :background "#3c3836" :foreground "#fbf1c7"))
+
+;; NO cargamos all-the-icons/nerd-icons globales: Treemacs usa treemacs-nerd-icons
+;; (use-package nerd-icons :if (display-graphic-p)) ; <- eliminado
+
+(use-package ligature
+  :straight (ligature :type git :host github :repo "mickeynp/ligature.el")
+  :config
+  (ligature-set-ligatures t '("www"))
+  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+  (ligature-set-ligatures 'prog-mode
+    '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+      ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+      "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+      "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+      "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+      "..." "+++" "/==" "///" "_|_" "&&" "^=" "~~" "~@" "~=" "~>"
+      "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|" "[|"
+      "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:" ">="
+      ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:" "<$"
+      "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!" "##"
+      "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+      "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "(*" "*)" "\\\\"
+      "://"))
+  (global-ligature-mode t))
+#+end_src
+
+* Paréntesis y delimitadores
+#+begin_src emacs-lisp
+(use-package paren :config (show-paren-mode 1))
+(use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+* Números de línea
+#+begin_src emacs-lisp
+(setq display-line-numbers-type 'relative)
+(dolist (hook '(prog-mode-hook conf-mode-hook text-mode-hook))
+  (add-hook hook #'display-line-numbers-mode))
+#+end_src
+
+* Dashboard
+#+begin_src emacs-lisp
+(use-package dashboard
+  :init
+  (setq dashboard-startup-banner (expand-file-name "assets/logo_256.png" user-emacs-directory)
+        dashboard-banner-logo-title "demacs — Minimalista. Modular. Científico."
+        dashboard-items '((recents  . 5)
+                          (projects . 5)
+                          (agenda   . 5))
+        dashboard-center-content t
+        dashboard-set-heading-icons t
+        dashboard-set-file-icons t
+        dashboard-show-shortcuts nil
+        dashboard-footer-messages
+        '("Memento Mori" "Amor Fati" "El obstáculo es el camino."
+          "Concéntrate en lo que puedes controlar." "Premeditación de los males."
+          "La virtud es el único bien." "Vivir conforme a la naturaleza."
+          "La muerte sonríe a todos; devuélvele la sonrisa." "El ego es el enemigo."
+          "Podrías dejar la vida ahora mismo." "No desperdicies tiempo discutiendo cómo debe ser un buen hombre; sé uno."
+          "Si no es correcto, no lo hagas; si no es verdad, no lo digas."
+          "Sufrimos más en la imaginación que en la realidad."
+          "La suerte guía a los que consienten y arrastra a los que se resisten."
+          "La mayor riqueza es vivir contento con poco.")
+        dashboard-projects-backend 'projectile)
+  :config
+  (dashboard-setup-startup-hook))
+#+end_src
+
+* Org: selection con Shift
+#+begin_src emacs-lisp
+(setq org-support-shift-select t)
+#+end_src
+
+* Confirmación
+#+begin_src emacs-lisp
+(message "ui.org cargado")
+#+end_src
+

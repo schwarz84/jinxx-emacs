@@ -1,0 +1,9 @@
+#+TITLE: data.org
+#+AUTHOR: Charly
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+
+** Confirmación
+#+begin_src emacs-lisp
+(message "data.org cargado correctamente")
+#+end_src
+

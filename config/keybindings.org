@@ -1,0 +1,8 @@
+#+TITLE: keybindings.org
+#+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+
+* Confirmación
+#+begin_src emacs-lisp
+(message "keybindings.org cargado")
+#+end_src
+
