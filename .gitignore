@@ -1,0 +1,28 @@
+# --- Emacs / Jinxx Emacs ---
+custom.el
+*.elc
+*~
+\#*\#
+.#*
+savehist
+recentf
+TAGS
+
+# Caches/estado estandarizados (no-littering)
+# (todo lo generado en var/ y etc/ no va al repo)
+var/
+etc/
+eln-cache/
+
+# Direnv (por si alguna vez lo usás en esta carpeta)
+.direnv/
+
+# --- straight.el: solo versionar el lockfile ---
+straight/*
+!straight/versions/
+straight/versions/*
+!straight/versions/default.el
+
+# SO / varios
+.DS_Store
+Thumbs.db

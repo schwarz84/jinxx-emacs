@@ -2,19 +2,8 @@
 
 **Minimalista. Modular. Científico.**
 
-Configuración de Emacs optimizada para ciencia de datos, escritura técnica y desarrollo en Python.  
+Configuración de Emacs con la idea de que este optimizada para ciencia de datos, escritura técnica y desarrollo.
 Arquitectura modular en archivos `.org` y gestor de paquetes `straight.el` para instalación limpia y reproducible.
-
----
-
-## Características destacadas
-
-- Arranque rápido: `straight.el` + optimizaciones de GC (`gcmh`) + configuración diferida.
-- Modularidad: cada área (núcleo, paquetes, UI, Org, datos) vive en su propio `.org`.
-- Flujo de trabajo data-science: Python, R/Julia (opcional), SQL, Jupyter desde Org.
-- Productividad sin adornos: Ivy/Counsel/Swiper, which-key, edición múltiple, navegación con `avy`.
-- Reproducible: versiones congeladas con `straight-freeze-versions` (y rollback con `straight-thaw-versions`).
-- Entornos por proyecto: integración con `direnv` vía `envrc`.
 
 ---
 
@@ -45,8 +34,6 @@ jinxx_emacs/
     ├── orgmode.org
     └── data.org
 ```
-Nota: `straight/versions/default.el` se crea al ejecutar `M-x straight-freeze-versions`.
-
 ---
 
 ## Requisitos externos (mínimos)
@@ -56,9 +43,9 @@ Nota: `straight/versions/default.el` se crea al ejecutar `M-x straight-freeze-ve
 - Python 3.x (y `pip`/`venv`)
 - `ripgrep` (para `counsel-rg`)
 - `direnv` (para `envrc` y entornos por proyecto)
-- Opcional: R y/o Julia
-- Opcional: Docker
-- Opcional: `libvterm` (para `vterm`)
+- R y/o Julia
+- Docker
+- `libvterm` (para `vterm`)
 
 **Dependencias Python recomendadas (para data/ML):**
 ```bash
@@ -77,77 +64,89 @@ using Pkg; Pkg.add(["LanguageServer","SymbolServer","JSON","StaticLint"])
 
 ---
 
-## Ubicación de paquetes por módulo
+## Configuracion
+
+### early-init.el - Optimizacion temprana de Emacs
+La función de este archivo es optimizar arranque, rendimiento y apariencia inicial.
+
+- Arranque optimizado: menos GC, menos handlers, sin cargas extra.
+- UI minimalista: sin menús, barras ni diálogos.
+- Optimización para LSP/procesos grandes: buffers más grandes, scroll fluido.
+- Seguridad controlada: sin cargar código dudoso, warnings relevantes visibles.
+- Preparado para straight.el: gestión de paquetes.
+- Compilación nativa activada: código Lisp más rápido.
+
+### init.el - Restauración de estado
+Realiza una restauración del sistema, importando los PATH base y cargando los modulos.
+
+- Optimización post-arranque: restaura GC, handlers y muestra tiempo.
+- Configuración limpia: separa custom.el.
+- Entorno correcto: importa PATH de la shell.
+- Carga modular inteligente: usa .el si está actualizado, tangling solo cuando hace falta.
+- Ajustes generales: redefine funciones sin warnings, variables locales seguras.
+- Finalización cuidada: GC, nativo con warnings, servidor Emacsclient.
+
 
 ### `config/core.org` — Núcleo y base operativa
+Realiza instalación y maneja el rendimiento; dejar lo esencial.
 
-**Objetivo:** instalación y rendimiento; dejar lo esencial listo desde el minuto 1.
-
-**Gestor & orquestación**
-- `straight.el` (bootstrap)
-- `use-package` (base de todo)
-
-**Rendimiento & limpieza**
-- `gcmh` (GC más suave)
-- `no-littering` (estructura de archivos limpia)
-
-**Descubribilidad & búsqueda (setup mínimo)**
-- `which-key` (activado con retardo bajo)
-- `ivy` + `counsel` + `swiper` (activados; sin tunning fino)
-- `ivy-prescient` (ordenamiento por uso; persistencia)
-
-> La configuración avanzada continúa en `packages.org`.
+- Gestión moderna de paquetes: straight.el + use-package, diferido, minimalista.
+- Rendimiento: GCMH para GC, no-littering para limpieza.
+- Archivos limpios: autosaves, historial, recentf y bookmarks centralizados en ~/.emacs.d/var/.
+- Comodidad general: backups, respuestas cortas, auto-pairs, refresh automático.
+- Universalidad: todo en UTF-8.
+- Transparencia: mensaje de carga confirmada.
 
 ---
 
 ### `config/packages.org` — Paquetes funcionales (config completa)
 
-**Minibuffer, búsqueda y ayuda (extensión)**
-- `which-key` (tweaks)
-- `ivy`/`counsel`/`swiper`/`ivy-prescient` (filtros, formatos, atajos extra)
-- `avy` (navegación ultrarrápida) — elegido
+### Minibuffer, búsqueda y ayuda
+- `which-key` 
+- `ivy` + `counsel` + `ivy-prescient`
+- `helpful` + `swiper` + `ivi-rich`
+- `avy` 
+- `wgrep` 
+- `bookmark` (builtin, integrado con Ivy)
 
-**Proyectos, archivos y entornos**
-- `projectile` + `counsel-projectile` — elegidos
-- `envrc` (integración con `direnv`) — elegido
-- `dirvish` — opcional (Dired vitaminado; por defecto Dired nativo)
-- `treemacs` + `treemacs-projectile` — opcional (más pesado; por defecto off)
-- `counsel-rg` (usa `ripgrep`)
+### Proyectos, archivos y entornos
+- `projectile` + `counsel-projectile`
+- `envrc` 
+- `dirvish` 
 
-**Edición productiva**
-- `multiple-cursors`, `expand-region`, `yasnippet` + `yasnippet-snippets` — elegidos
-- `vundo` — elegido (simple); `undo-tree` — alternativa
-- `editorconfig`, `comment-dwim-2`, `move-text` — opcionales
+### Edición productiva
+- `multiple-cursors`, `expand-region` 
+- `yasnippet` + `yasnippet-snippets` 
+- `vundo` 
+- `editorconfig`, `comment-dwim-2`, `move-text`, `hungry-delete` 
+- `hl-todo`
+- `crux`
 
-**Autocompletado y LSP**
-- `eglot` — elegido (LSP nativo, liviano)
-- `corfu` — elegido (UI simple)
-- `cape` — capfs extra
-- `kind-icon` — opcional
-- Alternativa no predeterminada: `lsp-mode` + `lsp-ui` + `company`
+### Autocompletado y LSP
+- `corfu` 
+- `cape` 
+- `eglot` 
 
-**Diagnóstico y formateo**
-- `apheleia` — elegido (formateo unificado asíncrono)
-- Si usás `lsp-mode`: `flycheck`. Con `eglot`: preferir `flymake` builtin + linters vía LSP
+### Diagnóstico y formateo
+- `apheleia` 
 
-**Git**
-- `magit` — elegido
-- `diff-hl` — opcional
-- `forge` — opcional
+### Git
+- `magit` 
+- `diff-hl` 
+- `forge`
 
-**Terminal y HTTP**
-- `vterm` — elegido (si hay `libvterm`); alternativa mínima: `eshell`
-- `restclient` o `verb` — opcional
+### Terminal y HTTP
+- `vterm` 
+- `verb` 
 
-**SQL y datos**
-- `sql-mode` (builtin) + `sqlformat` + `sql-indent` — elegido
-- `csv-mode`, `yaml-mode`, `toml-mode`, `json-mode`
-- `protobuf-mode` — opcional
-- `markdown-mode` — opcional
+### SQL y datos
+- `sql-mode` (builtin) + `sqlformat` + `sql-indent` 
+- `csv-mode`, `yaml-mode`, `toml-mode`, `json-mode`, `markdown-mode`, `protobuf-mode`
 
-**Docker y DevOps**
-- `docker.el`, `dockerfile-mode` — elegidos
-- `docker-tramp` — opcional
+### Docker y DevOps
+- `docker.el` 
+- `dockerfile-mode` 
+- `docker-tramp`
 
 ---
 

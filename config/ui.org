@@ -1,6 +1,71 @@
 #+TITLE: ui.org
 #+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
 
+* Apariencia global
+#+begin_src emacs-lisp
+(let ((jb "JetBrains Mono"))
+  (when (member jb (font-family-list))
+    (set-face-attribute 'default nil :font jb :height 110)))
+#+end_src
+
+* Modeline ligero
+#+begin_src emacs-lisp
+(column-number-mode t)
+(set-face-attribute 'mode-line nil :height 100)
+(set-face-attribute 'mode-line-inactive nil :height 100)
+(use-package minions 
+	:config (minions-mode 1))
+#+end_src
+
+* Tema y ligaduras (sin iconos globales)
+#+begin_src emacs-lisp
+(use-package gruvbox-theme
+  :init (load-theme 'gruvbox-dark-hard t))
+
+;; NO cargamos all-the-icons/nerd-icons globales: Treemacs usa treemacs-nerd-icons
+(use-package nerd-icons :if (display-graphic-p))
+
+(use-package ligature
+  :straight (ligature :type git :host github :repo "mickeynp/ligature.el")
+  :demand t
+  :config
+  (ligature-set-ligatures t '("www"))
+  (ligature-set-ligatures 'eww-mode '("ff" "fi" "ffi"))
+  (ligature-set-ligatures t
+    '("|||>" "<|||" "<==>" "<!--" "####" "~~>" "***" "||=" "||>"
+      ":::" "::=" "=:=" "===" "==>" "=!=" "=>>" "=<<" "=/=" "!=="
+      "!!." ">=>" ">>=" ">>>" ">>-" ">->" "->>" "-->" "---" "-<<"
+      "<~~" "<~>" "<*>" "<||" "<|>" "<$>" "<==" "<=>" "<=<" "<->"
+      "<--" "<-<" "<<=" "<<-" "<<<" "<+>" "</>" "###" "#_(" "..<"
+      "..." "+++" "/==" "///" "_|_" "&&" "^=" "~~" "~@" "~=" "~>"
+      "~-" "**" "*>" "*/" "||" "|}" "|]" "|=" "|>" "|-" "{|" "[|"
+      "]#" "::" ":=" ":>" ":<" "$>" "==" "=>" "!=" "!!" ">:" ">="
+      ">>" ">-" "-~" "-|" "->" "--" "-<" "<~" "<*" "<|" "<:" "<$"
+      "<=" "<>" "<-" "<<" "<+" "</" "#{" "#[" "#:" "#=" "#!" "##"
+      "#(" "#?" "#_" "%%" ".=" ".-" ".." ".?" "+>" "++" "?:"
+      "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "(*" "*)" "\\\\"
+      "://"))
+  (global-ligature-mode 1))
+#+end_src
+
+* Paréntesis y delimitadores
+#+begin_src emacs-lisp
+(use-package paren :config (show-paren-mode 1))
+(use-package rainbow-delimiters :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+
+* Números de línea
+#+begin_src emacs-lisp
+;; Mostrar números de línea relativos SOLO en buffers de programación
+(setq display-line-numbers-type 'relative)
+(add-hook 'prog-mode-hook #'display-line-numbers-mode)
+#+end_src
+
+* Org: selection con Shift
+#+begin_src emacs-lisp
+(setq org-support-shift-select t)
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "ui.org cargado")

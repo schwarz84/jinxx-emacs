@@ -1,6 +1,31 @@
 #+TITLE: functions.org
 #+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
 
+* Funcion para probar paquetes
+#+begin_src emacs-lisp
+(defun jinxx/try-straight (pkg)
+  "Instalar y cargar temporalmente PKG con straight.el."
+  (interactive "SNombre del paquete: ")
+  (straight-use-package pkg)
+  (require pkg nil 'noerror)
+  (message "Paquete %s instalado temporalmente con straight." pkg))
+#+end_src
+
+* Funcion para editar codigo en org-mode segun ventana completa o por defecto de org
+#+begin_src emacs-lisp
+(defun jinxx/org-edit-src-current-window ()
+  "Editar bloque en la misma ventana completa."
+  (interactive)
+  (let ((org-src-window-setup 'current-window))
+    (org-edit-special)))
+
+(defun jinxx/org-edit-src-default ()
+  "Editar bloque usando la configuración por defecto de Org."
+  (interactive)
+  (let ((org-src-window-setup 'reorganize-frame)) ;; valor default
+    (org-edit-special)))
+#+end_src    
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "functions.org cargado")

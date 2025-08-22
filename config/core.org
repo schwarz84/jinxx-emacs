@@ -3,6 +3,8 @@
 
 * Paquetes (bootstrap: straight.el + use-package)
 #+begin_src emacs-lisp
+(setq use-package-compute-statistics t)
+
 (defvar bootstrap-version)
 (let* ((bootstrap-file (expand-file-name
                         "straight/repos/straight.el/bootstrap.el"
@@ -57,17 +59,32 @@
 
 * Historial y archivos recientes
 #+begin_src emacs-lisp
-(save-place-mode 1)
-(savehist-mode 1)
-(recentf-mode 1)
+;; Carpeta var centralizada
+(defvar jinxx-var-dir (expand-file-name "var/" user-emacs-directory))
+(unless (file-directory-p jinxx-var-dir)
+  (make-directory jinxx-var-dir t))
 
-(setq history-length 500
-      savehist-file (expand-file-name "savehist" user-emacs-directory)
-      recentf-save-file (expand-file-name "recentf" user-emacs-directory)
+;; Historial de posiciones
+(setq save-place-file (expand-file-name "places" jinxx-var-dir))
+(save-place-mode 1)
+
+;; Historial de minibuffer/kill-ring
+(setq savehist-file (expand-file-name "savehist" jinxx-var-dir)
+      history-length 500
+      savehist-additional-variables '(search-ring regexp-search-ring kill-ring))
+(savehist-mode 1)
+
+;; Archivos recientes
+(setq recentf-save-file (expand-file-name "recentf" jinxx-var-dir)
       recentf-max-saved-items 300
       recentf-auto-cleanup 'never
-      recentf-exclude '("^/tmp/" "/TAGS\\'" "bookmarks\\'" "\\.gz\\'" "/var/folders/")
-      savehist-additional-variables '(search-ring regexp-search-ring kill-ring))
+      recentf-exclude '("^/tmp/" "/TAGS\\'" "bookmarks\\'" "\\.gz\\'" "/var/folders/"))
+(recentf-mode 1)
+
+;; Bookmarks explícitos
+(setq bookmark-default-file (expand-file-name "bookmarks" jinxx-var-dir)
+      bookmark-save-flag 1)
+
 #+end_src
 
 * Comportamiento general recomendado
@@ -92,40 +109,6 @@
 (set-terminal-coding-system  'utf-8)
 (set-keyboard-coding-system  'utf-8)
 (setq locale-coding-system   'utf-8)
-#+end_src
-
-* Minibuffer, búsqueda y ayuda (setup mínimo)
-#+begin_src emacs-lisp
-(use-package which-key
-  :hook (after-init . which-key-mode)
-  :init (setq which-key-idle-delay 0.30
-              which-key-max-description-length 35
-              which-key-separator " → "))
-
-(use-package ivy
-  :init (setq ivy-use-virtual-buffers t
-              ivy-count-format "%d/%d "
-              enable-recursive-minibuffers t)
-  :config (ivy-mode 1))
-
-(use-package counsel
-  :after ivy
-  :config (counsel-mode 1))
-
-(use-package swiper
-  :after ivy)
-
-(use-package ivy-prescient
-  :after (ivy counsel)
-  :config
-  (ivy-prescient-mode 1)
-  (prescient-persist-mode 1))
-#+end_src
-
-* Teclado y ventanas
-#+begin_src emacs-lisp
-(setq shift-select-mode t)
-(windmove-default-keybindings 'control) ;; C-<flechas>
 #+end_src
 
 * Confirmación de carga

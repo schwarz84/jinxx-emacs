@@ -1,8 +1,8 @@
 ;;; init.el --- Punto de entrada principal para jinxx_emacs -*- lexical-binding: t; -*-
 
-(require 'subr-x) ;; string-trim / string-empty-p
+(require 'subr-x)
 
-;; Restauración post-arranque (GC y file-handlers)
+;; Restauración post-arranque
 (add-hook 'emacs-startup-hook
           (lambda ()
             (setq gc-cons-threshold (* 64 1024 1024)
@@ -31,13 +31,13 @@
 ;; Lista y carga modular
 (defconst jinxx-modules
   '("core" "packages" "ui" "functions" "keybindings" "orgmode" "data")
-  "Módulos (sin extensión) que componen la configuración.")
+  "Módulos que componen la configuración.")
 
 (defun jinxx--module-path (base ext)
   (expand-file-name (format "config/%s.%s" base ext) user-emacs-directory))
 
 (defun jinxx--file-newer-p (a b)
-  "t si A es más nuevo que B, o si B no existe."
+  "Si esta mas actualizado lo recarga"
   (let ((fa (and (file-exists-p a) (file-attributes a)))
         (fb (and (file-exists-p b) (file-attributes b))))
     (cond
@@ -48,7 +48,7 @@
      (t nil))))
 
 (defun jinxx--maybe-tangle-and-load (mod)
-  "Carga MOD.el si está al día; si falta o está viejo, tanglea MOD.org y carga."
+  "Carga el .el si está al día; si falta o está viejo, tanglea el .org y carga."
   (let* ((org (jinxx--module-path mod "org"))
          (el  (jinxx--module-path mod "el")))
     (cond

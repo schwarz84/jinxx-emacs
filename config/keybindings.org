@@ -1,6 +1,47 @@
 #+TITLE: keybindings.org
 #+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
 
+* Dirvish lateral con M-1
+#+begin_src emacs-lisp
+(global-set-key (kbd "M-1") #'jinxx/dirvish-side-toggle)
+#+end_src
+
+* ESC como tecla universal para cancelar
+#+begin_src emacs-lisp
+(global-set-key (kbd "<escape>") #'keyboard-escape-quit)
+
+(define-key minibuffer-local-map (kbd "<escape>") #'abort-recursive-edit)
+
+(with-eval-after-load 'isearch
+  (define-key isearch-mode-map (kbd "<escape>") #'isearch-abort))
+
+(with-eval-after-load 'ivy
+  (define-key ivy-minibuffer-map (kbd "<escape>") #'minibuffer-keyboard-quit))
+(with-eval-after-load 'counsel
+  (define-key ivy-minibuffer-map (kbd "<escape>") #'minibuffer-keyboard-quit))
+
+;; Si usás terminal que trata ESC como Meta
+(define-key key-translation-map (kbd "ESC") (kbd "<escape>"))
+#+end_src
+
+* Teclado y ventanas
+#+begin_src emacs-lisp
+(setq shift-select-mode t)
+(windmove-default-keybindings 'control)
+#+end_src
+
+* Whitespaces toggle
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-c w t") #'whitespace-mode)
+#+end_src
+
+* Keys para edicion de codigo en org
+#+begin_src emacs-lisp
+(with-eval-after-load 'org
+  (define-key org-mode-map (kbd "C-c '") #'jinxx/org-edit-src-current-window)
+  (define-key org-mode-map (kbd "C-c \"") #'jinxx/org-edit-src-default))
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "keybindings.org cargado")

@@ -1,9 +1,9 @@
 ;;; early-init.el --- Carga temprana ultra-optimizada para dcmacs  -*- lexical-binding: t; no-byte-compile: t; -*-
 
 ;; Entorno básico
-(defvar dcmacs-dir (file-name-directory (or load-file-name buffer-file-name)))
+(defvar jinxx-dir (file-name-directory (or load-file-name buffer-file-name)))
 
-;; Desactivar cualquier código global de site-lisp (acelera + evita sorpresas)
+;; Desactivar cualquier código global
 (setq site-run-file nil)
 
 ;; Helper para setear/actualizar alist sin duplicar
@@ -12,7 +12,7 @@
     (if cell (setcdr cell val)
       (push (cons key val) default-frame-alist))))
 
-;; Interfaz mínima (sin duplicar)
+;; Interfaz mínima
 (dolist (pair '((menu-bar-lines         . 0)
                 (tool-bar-lines         . 0)
                 (vertical-scroll-bars   . nil)
@@ -29,8 +29,8 @@
 (setq gc-cons-threshold most-positive-fixnum
       gc-cons-percentage 0.5)
 
-;; Congela file-handlers y conserva copia para restaurar luego (en init.el)
-(defvar dcmacs--file-name-handler-alist (copy-alist file-name-handler-alist))
+;; Congela file-handlers y conserva copia para restaurar luego
+(defvar jinxx--file-name-handler-alist (copy-alist file-name-handler-alist))
 (setq file-name-handler-alist nil
       inhibit-compacting-font-caches t)
 
@@ -44,13 +44,13 @@
   (when (boundp 'native-comp-jit-compilation)      ; Emacs 29+
     (setq native-comp-jit-compilation t)))
 
-;; Paquetes y carga (package.el deshabilitado; straight se bootstrapea en core.org)
+;; Paquetes y carga
 (setq package-enable-at-startup nil
       package-quickstart       nil
-      load-prefer-newer        nil
+      load-prefer-newer        t
       auto-window-vscroll      nil)
 
-;; Reducciones de trabajo del redisplay y buffers de proceso grandes (mejor para LSP)
+;; Reducciones de trabajo del redisplay y buffers de proceso grandes
 (setq read-process-output-max (* 4 1024 1024)
       fast-but-imprecise-scrolling t
       redisplay-skip-fontification-on-input t
@@ -66,7 +66,7 @@
       frame-resize-pixelwise            t
       message-log-max                   1000)
 
-;; Seguridad y warnings (no esconder demasiado)
+;; Seguridad y warnings
 (setq enable-local-variables :safe
       warning-minimum-level :warning
       byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))

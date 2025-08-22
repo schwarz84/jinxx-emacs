@@ -1,8 +1,166 @@
-#+TITLE: packages.org
+x#+TITLE: packages.org
 #+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
+
+* Core UX
+#+begin_src emacs-lisp
+;; which-key: muestra las teclas disponibles tras un prefijo.
+(use-package which-key
+  :ensure nil
+  :hook (after-init . which-key-mode)
+  :custom
+  (which-key-idle-delay 0.4))
+
+;; Ivy: completado ligero para todo el minibuffer.
+(use-package ivy
+  :diminish
+  :hook (after-init . ivy-mode)
+  :bind (:map ivy-minibuffer-map
+         ("C-n" . ivy-next-line)
+         ("C-p" . ivy-previous-line)
+         ("TAB" . ivy-alt-done)
+         ("C-l" . ivy-alt-done)
+         :map ivy-switch-buffer-map
+         ("C-n" . ivy-next-line)
+         ("C-p" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-n" . ivy-next-line)
+         ("C-p" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
+  :custom
+  (ivy-use-virtual-buffers t)
+  (ivy-count-format "(%d/%d) "))
+
+;; Counsel: comandos enriquecidos con interfaz Ivy
+(use-package counsel
+  :after ivy
+  :bind (("M-x"     . counsel-M-x)
+         ("C-x C-f" . counsel-find-file)
+         ("M-y"     . counsel-yank-pop)
+         ("C-x b"   . counsel-switch-buffer)
+         ("C-x C-r" . counsel-recentf)
+         ("C-c g"   . counsel-git)
+         ("C-c j"   . counsel-git-grep)
+         ("C-c k"   . counsel-rg)
+         ("C-h v"   . counsel-describe-variable)
+         ("C-h f"   . counsel-describe-function)
+         ("C-h b"   . counsel-descbinds)
+	 ("C-c b"   . counsel-bookmark)
+         :map minibuffer-local-map
+         ("C-r" . counsel-minibuffer-history))
+  :config
+  (setq ivy-initial-inputs-alist nil)
+  (setq counsel-find-file-ignore-regexp
+         "\\(?:__pycache__/\\|\\.ipynb_checkpoints/\\)"))
+
+;; Helpful: buffers de ayuda enriquecidos, integrados con Counsel
+(use-package helpful
+  :after counsel
+  :custom
+  (counsel-describe-function-function #'helpful-callable)
+  (counsel-describe-variable-function #'helpful-variable)
+  :bind
+  ([remap describe-function] . helpful-function)
+  ([remap describe-symbol]   . helpful-symbol)
+  ([remap describe-variable] . helpful-variable)
+  ([remap describe-command]  . helpful-command)
+  ([remap describe-key]      . helpful-key))
+
+;; Swiper: búsqueda incremental en buffer con interfaz Ivy
+(use-package swiper
+  :after ivy
+  :bind (("C-s"     . swiper-isearch)
+         ("C-r"     . swiper-isearch-backward)
+         ("C-S-s"   . swiper)
+         ("M-s ."   . swiper-thing-at-point))
+  :custom
+  (swiper-goto-start-of-match t)
+  (swiper-action-recenter t))
+
+;; Ivy-Rich: columnas extra (modo, proyecto, ruta, tamaño, etc.) en Ivy/Counsel
+(use-package ivy-rich
+  :after counsel
+  :init
+  (ivy-rich-mode 1)
+  :custom
+  (ivy-format-functions-alist
+   '((t . ivy-format-function-line)))
+  ;; Rutas abreviadas (~/… en lugar de /home/…)
+  (ivy-rich-path-style 'abbrev)
+  ;; Cachea el root del proyecto para acelerar switch-buffer en repos grandes
+  :config
+  (when (fboundp 'ivy-rich-project-root-cache-mode)
+    (ivy-rich-project-root-cache-mode +1)))
+
+;; Smex: prioriza los comandos más usados en M-x (lo aprovecha counsel-M-x)
+(use-package smex
+  :after counsel
+  :init
+  (smex-initialize)
+  :custom
+  (smex-save-file (expand-file-name "var/smex-items" user-emacs-directory)))
+
+;; prescient: ranking por uso (frecencia) + persistencia del historial
+(use-package prescient
+  :custom
+  (prescient-save-file (expand-file-name "var/prescient-save.el" user-emacs-directory))
+  :config
+  (prescient-persist-mode +1))
+
+;; ivy-prescient: aplica ese ranking y (opcionalmente) filtrado en Ivy/Counsel
+(use-package ivy-prescient
+  :after (ivy prescient)
+  :custom
+  (ivy-prescient-enable-sorting t)
+  (ivy-prescient-enable-filtering t)
+  :config
+  (ivy-prescient-mode +1))
+
+;; Whitespaces para que se vean
+(use-package whitespace
+  :init
+  (setq whitespace-style '(face space-mark trailing))
+  (setq whitespace-display-mappings '((space-mark 32 [183] [46])))
+  (setq whitespace-space-regexp "\\(^ +\\| +$\\)")
+  :hook ((prog-mode . whitespace-mode)))
+
+;; wgrep: editar resultados de grep/rg directamente y aplicar cambios a los archivos
+(use-package wgrep
+  :after counsel
+  :commands (wgrep-change-to-wgrep-mode)
+  :config
+  ;; Hace que al guardar con C-x C-s se apliquen los cambios sin preguntar
+  (setq wgrep-auto-save-buffer t))
+#+end_src
+
+* Edicion productiva
+#+begin_src emacs-lisp
+;; crux: utilidades prácticas de edición y archivos
+(use-package crux
+  :bind
+  ([remap move-beginning-of-line] . crux-move-beginning-of-line)
+  (("C-c x d" . crux-duplicate-current-line-or-region)
+   ("C-c x c" . crux-duplicate-and-comment-current-line-or-region)
+   ("C-c x o" . crux-smart-open-line)
+   ("C-c x O" . crux-smart-open-line-above)
+   ("C-c x k" . crux-smart-kill-line)
+   ("C-c x K" . crux-kill-other-buffers)
+   ("C-c x r" . crux-rename-file-and-buffer)
+   ("C-c x D" . crux-delete-file-and-buffer)
+   ("C-c x n" . crux-cleanup-buffer-or-region)
+   ("C-c x I" . crux-find-user-init-file)))
+#+end_src
+
+* Lenguajes y datos
+#+begin_src emacs-lisp
+;; Markdown: edición de archivos .md
+(use-package markdown-mode
+  :mode ("\\.md\\'" . gfm-mode))
+#+end_src
 
 * Confirmación
 #+begin_src emacs-lisp
-(message "packages.org finalizado")
+(message "packages.org cargado")
 #+end_src
 
