@@ -26,6 +26,44 @@
     (org-edit-special)))
 #+end_src    
 
+* Funcion para treemacs
+#+begin_src emacs-lisp
+(defun jinxx/treemacs-smart ()
+  "Si Treemacs no está visible → abrirlo.
+  Si está visible pero no es la ventana activa -> seleccionarlo.
+  Si ya es la ventana activa → ocultarlo."
+  (interactive)
+  (let ((win (catch 'found
+               (dolist (w (window-list))
+                 (with-current-buffer (window-buffer w)
+                   (when (derived-mode-p 'treemacs-mode)
+                     (throw 'found w))))
+               nil)))
+    (cond
+     ((null win)              (treemacs))
+     ((eq win (selected-window)) (treemacs))
+     (t                       (select-window win)))))
+#+end_src
+
+* Helpers de formateo
+#+begin_src emacs-lisp
+(defun jinxx/apheleia-skip-large-file ()
+  "Evita correr formatters en buffers muy grandes."
+  (let ((limit (* 1 1024 1024)))
+    (> (buffer-size) limit)))
+#+end_src
+
+* Term
+#+begin_src emacs-lisp
+(defun jinxx/vterm-toggle-project ()
+  "Toggle vterm en panel inferior, haciendo cd al root del proyecto."
+  (interactive)
+  (let* ((pr (when (fboundp 'project-current) (project-current)))
+         (dir (if pr (project-root pr) default-directory)))
+    (let ((default-directory dir))
+      (vterm-toggle-cd))))
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "functions.org cargado")

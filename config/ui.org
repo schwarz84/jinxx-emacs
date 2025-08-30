@@ -59,6 +59,8 @@
 ;; Mostrar números de línea relativos SOLO en buffers de programación
 (setq display-line-numbers-type 'relative)
 (add-hook 'prog-mode-hook #'display-line-numbers-mode)
+(setq-default evil-shift-width tab-width)
+(setq-default indent-tabs-mode nil)
 #+end_src
 
 * Org: selection con Shift

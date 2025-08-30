@@ -66,10 +66,5 @@
       frame-resize-pixelwise            t
       message-log-max                   1000)
 
-;; Seguridad y warnings
-(setq enable-local-variables :safe
-      warning-minimum-level :warning
-      byte-compile-warnings '(not free-vars unresolved noruntime lexical make-local))
-
 ;;; early-init.el ends here
 

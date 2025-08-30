@@ -1,26 +1,16 @@
 #+TITLE: keybindings.org
 #+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
 
-* Dirvish lateral con M-1
-#+begin_src emacs-lisp
-(global-set-key (kbd "M-1") #'jinxx/dirvish-side-toggle)
-#+end_src
-
 * ESC como tecla universal para cancelar
 #+begin_src emacs-lisp
 (global-set-key (kbd "<escape>") #'keyboard-escape-quit)
-
 (define-key minibuffer-local-map (kbd "<escape>") #'abort-recursive-edit)
-
 (with-eval-after-load 'isearch
   (define-key isearch-mode-map (kbd "<escape>") #'isearch-abort))
-
 (with-eval-after-load 'ivy
   (define-key ivy-minibuffer-map (kbd "<escape>") #'minibuffer-keyboard-quit))
 (with-eval-after-load 'counsel
   (define-key ivy-minibuffer-map (kbd "<escape>") #'minibuffer-keyboard-quit))
-
-;; Si usás terminal que trata ESC como Meta
 (define-key key-translation-map (kbd "ESC") (kbd "<escape>"))
 #+end_src
 
@@ -40,6 +30,53 @@
 (with-eval-after-load 'org
   (define-key org-mode-map (kbd "C-c '") #'jinxx/org-edit-src-current-window)
   (define-key org-mode-map (kbd "C-c \"") #'jinxx/org-edit-src-default))
+#+end_src
+
+* Keys de projectile treemacs
+#+begin_src emacs-lisp
+;; Treemacs
+(global-set-key (kbd "M-1") #'jinxx/treemacs-smart)
+#+end_src
+
+* Keys terminales
+#+begin_src emacs-lisp
+;; Toggle panel inferior SIEMPRE en raíz del proyecto
+(global-set-key (kbd "C-c t t") #'jinxx/vterm-toggle-project)
+
+(global-set-key (kbd "C-c t N") #'multi-vterm-project)  ;; crea otra vterm en el panel
+;; Que n/p funcionen también DENTRO de vterm
+(with-eval-after-load 'vterm
+  (define-key vterm-mode-map (kbd "C-c t n") #'multi-vterm-next)
+  (define-key vterm-mode-map (kbd "C-c t p") #'multi-vterm-prev))
+#+end_src
+
+* Keys de git
+#+begin_src emacs-lisp
+;; Entrada a Magit
+(global-set-key (kbd "C-x g")   #'magit-status)    ;; status del repo actual
+(global-set-key (kbd "C-x M-g") #'magit-dispatch)  ;; menú rápido de acciones
+(global-set-key (kbd "C-c g")   #'magit-file-dispatch) ;; acciones sobre el archivo actual
+
+;; Navegar/revertir “hunks” (diff-hl)
+(global-set-key (kbd "C-c v n") #'diff-hl-next-hunk)
+(global-set-key (kbd "C-c v p") #'diff-hl-previous-hunk)
+(global-set-key (kbd "C-c v r") #'diff-hl-revert-hunk)
+
+;;ver TODOs del repo en lista dedicada
+(global-set-key (kbd "C-c T") #'magit-todos-list)
+#+end_src
+
+* Edición productiva (keys)
+#+begin_src emacs-lisp
+;; yasnippet utilidades
+(global-set-key (kbd "C-c y i") #'yas-insert-snippet)
+(global-set-key (kbd "C-c y n") #'yas-new-snippet)
+(global-set-key (kbd "C-c y v") #'yas-visit-snippet-file)
+
+(with-eval-after-load 'multiple-cursors-core
+    (define-key mc/keymap (kbd "<escape>") #'mc/keyboard-quit))
+(global-unset-key (kbd "M-<down-mouse-1>"))
+(global-set-key   (kbd "M-<mouse-1>") #'mc/add-cursor-on-click)
 #+end_src
 
 * Confirmación

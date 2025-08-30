@@ -80,6 +80,9 @@
 (require 'server)
 (unless (server-running-p) (server-start))
 
+;; Git autenticacion
+(setq auth-sources '("~/.authinfo.gpg"))
+
 (provide 'init)
 ;;; init.el ends here
 

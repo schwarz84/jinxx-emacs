@@ -1,11 +1,10 @@
-x#+TITLE: packages.org
+#+TITLE: packages.org
 #+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
 
 * Core UX
 #+begin_src emacs-lisp
 ;; which-key: muestra las teclas disponibles tras un prefijo.
 (use-package which-key
-  :ensure nil
   :hook (after-init . which-key-mode)
   :custom
   (which-key-idle-delay 0.4))
@@ -40,8 +39,6 @@ x#+TITLE: packages.org
          ("M-y"     . counsel-yank-pop)
          ("C-x b"   . counsel-switch-buffer)
          ("C-x C-r" . counsel-recentf)
-         ("C-c g"   . counsel-git)
-         ("C-c j"   . counsel-git-grep)
          ("C-c k"   . counsel-rg)
          ("C-h v"   . counsel-describe-variable)
          ("C-h f"   . counsel-describe-function)
@@ -132,6 +129,166 @@ x#+TITLE: packages.org
   :config
   ;; Hace que al guardar con C-x C-s se apliquen los cambios sin preguntar
   (setq wgrep-auto-save-buffer t))
+
+;; Selección incremental
+(use-package expand-region
+  :commands (er/expand-region er/contract-region)
+  :bind (("C-=" . er/expand-region)
+         ("C--" . er/contract-region))
+  :custom
+  (expand-region-fast-keys-enabled t)
+  (expand-region-contract-fast-key "-")
+  (expand-region-reset-fast-key "0")
+  (expand-region-skip-whitespace t)
+  (expand-region-smart-cursor t)
+  (expand-region-subword-enabled t))
+
+;; winner-mode: deshacer/rehacer disposición de ventanas
+(use-package winner
+  :init
+  (winner-mode 1))
+#+end_src
+
+* Proyectos, tree y arhcivos
+#+begin_src emacs-lisp
+;; Projectile con Ivy como frontend
+(use-package projectile
+  :demand t
+  :custom
+  	(projectile-completion-system 'ivy)
+  	(projectile-indexing-method 'alien)
+  	(projectile-enable-caching t)
+  :bind-keymap
+  	("C-c p" . projectile-command-map)   ;; <-- evita el void-variable
+  :init
+  	(setq projectile-project-search-path '("~/Proyectos" "~/Sandbox"))
+  :config
+  	(projectile-mode 1))
+
+;; Counsel projectile
+(use-package counsel-projectile
+  :after (projectile counsel)
+  :init
+  (setq projectile-switch-project-action #'counsel-projectile)
+  :bind
+  (:map projectile-command-map
+        ("p" . counsel-projectile-switch-project)   ;; C-c p p
+        ("f" . counsel-projectile-find-file)        ;; C-c p f
+        ("r" . counsel-projectile-recentf)          ;; C-c p r
+        ("g" . counsel-projectile-rg)               ;; C-c p g
+        ("b" . counsel-projectile-switch-to-buffer) ;; C-c p b
+        ("k" . project-kill-buffers)                ;; C-c p k
+        ("i" . projectile-invalidate-cache))        ;; C-c p i
+  :config
+  (counsel-projectile-mode 1))
+
+
+;; Treemacs
+(use-package treemacs
+  :commands (treemacs treemacs-select-window)
+  :init
+  (setq treemacs-width 25
+        treemacs-position 'left
+        treemacs-is-never-other-window t
+        treemacs-indentation 1)
+  :config
+  (treemacs-follow-mode 1)
+  (treemacs-filewatch-mode 1)
+  (treemacs-git-mode 'deferred)
+  (treemacs-resize-icons 13))
+
+(use-package treemacs-projectile :after (treemacs projectile))
+
+;; Nerd Icons 
+(use-package nerd-icons
+  :init
+  (setq nerd-icons-scale-factor 0.5))
+
+(use-package treemacs-nerd-icons
+  :after (treemacs nerd-icons)
+  :config
+  (treemacs-load-theme "nerd-icons"))
+
+;; Sesión global persistente
+(use-package desktop
+  :ensure nil
+  :init
+  (let ((dir (expand-file-name "var/desktop/" user-emacs-directory)))
+    (setq desktop-dirname             dir
+          desktop-path                (list dir)
+          desktop-save                t
+          desktop-auto-save-timeout   60
+          desktop-load-locked-desktop t)
+    (unless (file-directory-p dir) (make-directory dir t)))
+  :config
+  (desktop-save-mode 1)
+  (add-hook 'kill-emacs-hook #'desktop-save-in-desktop-dir))
+#+end_src
+
+* Terminales y multi term
+#+begin_src emacs-lisp
+;; vterm + multi-vterm (igual que ya tenés)
+(use-package vterm
+  :commands (vterm)
+  :custom
+  (vterm-shell (or (getenv "SHELL") "/bin/bash"))
+  (vterm-max-scrollback 5000)
+  (vterm-kill-buffer-on-exit t))
+
+;; multi-vterm: agrego el comando project
+(use-package multi-vterm
+  :after vterm
+  :commands (multi-vterm multi-vterm-next multi-vterm-prev multi-vterm-project))
+
+;; vterm-toggle: panel inferior fijo (30%)
+(use-package vterm-toggle
+  :after vterm
+  :config
+  (setq vterm-toggle-fullscreen-p nil)
+  ;; Mostrar SIEMPRE los buffers vterm en una ventana lateral abajo (30%):
+  (add-to-list 'display-buffer-alist
+               '((lambda (buffer-or-name _)
+                   (let ((buf (get-buffer buffer-or-name)))
+                     (with-current-buffer buf
+                       (or (derived-mode-p 'vterm-mode)
+                           (string-prefix-p vterm-buffer-name (buffer-name buf))))))
+                 (display-buffer-reuse-window display-buffer-in-side-window)
+                 (side . bottom)
+                 (reusable-frames . visible)
+                 (window-height . 0.3))))
+#+end_src
+
+* Git y revision
+#+begin_src emacs-lisp
+;; Magit: interfaz Git completa
+(use-package magit
+  :commands (magit-status magit-dispatch magit-file-dispatch magit-list-repositories)
+  :custom
+  ;; Ventanas: todo en la misma, menos los diffs
+  (magit-display-buffer-function #'magit-display-buffer-same-window-except-diff-v1)
+  ;; Guardar buffers del repo sin preguntar antes de refrescar/operar
+  (magit-save-repository-buffers 'dontask)
+  ;; Directorios a escanear para magit-list-repositories
+  (magit-repository-directories '(("~/Proyectos" . 2) ("~/Sandbox" . 1))))
+
+;; Forge
+(use-package forge
+  :after magit)
+
+;; magit-todos
+(use-package magit-todos
+  :after magit
+  :hook (magit-status-mode . magit-todos-mode)
+  :custom
+  (magit-todos-keywords '("TODO" "FIXME" "BUG" "HACK" "REVIEW" "NOTE")))
+
+;; diff-hl: marcas en el fringe + navegación/revert por hunk
+(use-package diff-hl
+  :hook ((dired-mode . diff-hl-dired-mode)
+         (magit-post-refresh . diff-hl-magit-post-refresh))
+  :config
+  (global-diff-hl-mode 1)    ;; resalta cambios en todos los buffers versionados
+  (diff-hl-flydiff-mode 1))  ;; actualiza “on the fly” sin guardar
 #+end_src
 
 * Edicion productiva
@@ -150,6 +307,75 @@ x#+TITLE: packages.org
    ("C-c x D" . crux-delete-file-and-buffer)
    ("C-c x n" . crux-cleanup-buffer-or-region)
    ("C-c x I" . crux-find-user-init-file)))
+
+;; multiple-cursors: edición paralela
+(use-package multiple-cursors
+  :init
+  (setq mc/always-run-for-all t)
+  (setq mc/list-file (expand-file-name "var/.mc-lists.el" user-emacs-directory))
+  :bind (("C-c m l" . mc/edit-lines)
+         ("C-c m b" . mc/edit-beginnings-of-lines)
+         ("C-c m e" . mc/edit-ends-of-lines)
+         ("C->"     . mc/mark-next-like-this)
+         ("C-<"     . mc/mark-previous-like-this)
+         ("C-c m a" . mc/mark-all-like-this)
+         ("C-c m r" . set-rectangular-region-anchor)))
+
+;; avy: saltos rápidos
+(use-package avy
+  :bind ( :map search-map
+          ("a" . avy-goto-char-timer)
+          ("l" . avy-goto-line)
+          ("w" . avy-goto-word-1))
+  :custom
+  (avy-background t)
+  (avy-timeout-seconds 0.35))
+
+;; smartparens
+(use-package smartparens
+  :hook ((prog-mode . smartparens-mode)
+         (org-mode  . smartparens-mode))
+  :config
+  (require 'smartparens-config)
+  (show-smartparens-global-mode 1)
+  ;; Modo estricto = estructura siempre balanceada (como paredit)
+  (smartparens-strict-mode 1)
+  ;; Evitar choques con electric-pair localmente
+  (add-hook 'smartparens-mode-hook (lambda () (electric-pair-local-mode -1))))
+
+;; Snippets
+(use-package yasnippet
+  :hook ((prog-mode . yas-minor-mode)
+         (org-mode  . yas-minor-mode))
+  :init
+  ;; Tu colección personal primero, después la de comunidad
+  (setq yas-snippet-dirs
+        (list (expand-file-name "snippets" user-emacs-directory)
+              (expand-file-name "straight/repos/yasnippet-snippets/snippets"
+                                user-emacs-directory)))
+  :config
+  (yas-reload-all))
+
+(use-package yasnippet-snippets
+  :after yasnippet)
+
+;; Apheleia: formateo asíncrono, estable al punto
+(use-package apheleia
+  :init
+  (with-eval-after-load 'apheleia
+    (setf (alist-get 'isort apheleia-formatters) '("isort" "--stdout" "-"))
+    (setf (alist-get 'python-mode apheleia-mode-alist) '(isort black)))
+  :config
+  (apheleia-global-mode +1)
+  (add-hook 'apheleia-skip-functions #'jinxx/apheleia-skip-large-file))
+
+;; Mover línea o región arriba/abajo (estilo IDE)
+(use-package move-text
+  :bind (("M-S-<up>"   . move-text-up)
+         ("M-S-<down>" . move-text-down))
+  :config
+  (move-text-default-bindings))
+
 #+end_src
 
 * Lenguajes y datos
