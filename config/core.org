@@ -44,6 +44,13 @@
   :init
   (setq no-littering-etc-directory (expand-file-name "etc/" user-emacs-directory)
         no-littering-var-directory (expand-file-name "var/" user-emacs-directory)))
+
+;; Aviso por archivo grande: subilo a 100MB (y podés elegir visitarlo "literal")
+(setq large-file-warning-threshold (* 100 1024 1024))
+
+;; Líneas MUY largas (campos monstruosos en CSV): mitigación oficial
+(when (fboundp 'global-so-long-mode)
+  (global-so-long-mode 1))
 #+end_src
 
 * Autosaves fuera del repo

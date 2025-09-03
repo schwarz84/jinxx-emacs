@@ -5,12 +5,14 @@
 #+begin_src emacs-lisp
 ;; which-key: muestra las teclas disponibles tras un prefijo.
 (use-package which-key
+  :demand t
   :hook (after-init . which-key-mode)
   :custom
   (which-key-idle-delay 0.4))
 
 ;; Ivy: completado ligero para todo el minibuffer.
 (use-package ivy
+  :demand t
   :diminish
   :hook (after-init . ivy-mode)
   :bind (:map ivy-minibuffer-map
@@ -33,6 +35,7 @@
 
 ;; Counsel: comandos enriquecidos con interfaz Ivy
 (use-package counsel
+  :demand t
   :after ivy
   :bind (("M-x"     . counsel-M-x)
          ("C-x C-f" . counsel-find-file)
@@ -77,6 +80,7 @@
 
 ;; Ivy-Rich: columnas extra (modo, proyecto, ruta, tamaño, etc.) en Ivy/Counsel
 (use-package ivy-rich
+  :demand t
   :after counsel
   :init
   (ivy-rich-mode 1)
@@ -100,6 +104,7 @@
 
 ;; prescient: ranking por uso (frecencia) + persistencia del historial
 (use-package prescient
+  :demand t
   :custom
   (prescient-save-file (expand-file-name "var/prescient-save.el" user-emacs-directory))
   :config
@@ -212,6 +217,7 @@
 ;; Sesión global persistente
 (use-package desktop
   :ensure nil
+  :demand t
   :init
   (let ((dir (expand-file-name "var/desktop/" user-emacs-directory)))
     (setq desktop-dirname             dir
@@ -284,11 +290,61 @@
 
 ;; diff-hl: marcas en el fringe + navegación/revert por hunk
 (use-package diff-hl
+  :demand t 
   :hook ((dired-mode . diff-hl-dired-mode)
          (magit-post-refresh . diff-hl-magit-post-refresh))
   :config
   (global-diff-hl-mode 1)    ;; resalta cambios en todos los buffers versionados
   (diff-hl-flydiff-mode 1))  ;; actualiza “on the fly” sin guardar
+
+(use-package hl-todo
+  :demand t
+  :hook (after-init . global-hl-todo-mode)
+  :bind (("C-c h n" . hl-todo-next)
+         ("C-c h p" . hl-todo-previous)
+         ("C-c h o" . hl-todo-occur)          ;; TODOs del buffer (usa occur)
+         ("C-c h g" . (lambda ()               ;; TODOs del proyecto (usa ripgrep vía counsel)
+                        (interactive)
+                        (counsel-rg "TODO\\|FIXME\\|HACK\\|REVIEW\\|DEPRECATED\\|BUG\\|NOTE\\|WIP"))))
+  :custom
+  ;; Paleta gruvbox (contraste con dark-hard)
+  (hl-todo-keyword-faces
+   '(("TODO"       . "#fb4934")  ;; red
+     ("FIXME"      . "#fb4934")
+     ("BUG"        . "#cc241d")
+     ("HACK"       . "#fe8019")  ;; orange
+     ("REVIEW"     . "#fabd2f")  ;; yellow
+     ("DEPRECATED" . "#d3869b")  ;; purple
+     ("NOTE"       . "#83a598")  ;; blue
+     ("WIP"        . "#8ec07c")  ;; aqua
+     ("XXX"        . "#d3869b")
+     ("DONE"       . "#b8bb26"))))
+
+(use-package pulsar
+  :demand t
+  :init
+  (setq pulsar-pulse t
+        pulsar-delay 0.055
+        pulsar-iterations 8
+        pulsar-face 'pulsar-cyan
+        pulsar-highlight-face 'pulsar-yellow
+        pulsar-resolve-pulse-function-aliases t)
+  :hook
+  ((after-init . pulsar-global-mode)
+   (next-error . pulsar-pulse-line))
+  :bind (("C-c l p" . pulsar-pulse-line)
+         ("C-c l h" . pulsar-highlight-line))
+  :config
+  ;; Amplío triggers para tu stack Ivy/Counsel + navegación
+  (dolist (fn '(recenter-top-bottom
+                other-window
+                windmove-up windmove-down windmove-left windmove-right
+                avy-goto-char-timer
+                swiper swiper-isearch swiper-isearch-backward
+                counsel-rg counsel-imenu counsel-switch-buffer
+                xref-find-definitions xref-pop-marker-stack
+                bookmark-jump next-error previous-error))
+    (add-to-list 'pulsar-pulse-functions fn)))
 #+end_src
 
 * Edicion productiva
@@ -332,15 +388,14 @@
   (avy-timeout-seconds 0.35))
 
 ;; smartparens
+;; smartparens
 (use-package smartparens
   :hook ((prog-mode . smartparens-mode)
-         (org-mode  . smartparens-mode))
+         (org-mode  . smartparens-mode)
+         (smartparens-mode . smartparens-strict-mode)) ;; estricta cuando se activa
   :config
   (require 'smartparens-config)
   (show-smartparens-global-mode 1)
-  ;; Modo estricto = estructura siempre balanceada (como paredit)
-  (smartparens-strict-mode 1)
-  ;; Evitar choques con electric-pair localmente
   (add-hook 'smartparens-mode-hook (lambda () (electric-pair-local-mode -1))))
 
 ;; Snippets
@@ -361,6 +416,7 @@
 
 ;; Apheleia: formateo asíncrono, estable al punto
 (use-package apheleia
+  :demand t
   :init
   (with-eval-after-load 'apheleia
     (setf (alist-get 'isort apheleia-formatters) '("isort" "--stdout" "-"))
@@ -384,6 +440,33 @@
 (use-package markdown-mode
   :mode ("\\.md\\'" . gfm-mode))
 #+end_src
+
+* Leer archivos cvs grandes y pequenios
+#+begin_src emacs-lisp
+;; CSV/TSV
+(use-package csv-mode
+  :mode (("\\.csv\\'" . csv-mode)
+         ("\\.tsv\\'" . tsv-mode))
+  :init
+    (setq csv-separators '("," ";" "\t"))
+  :bind (:map csv-mode-map
+              ;; Alinear/desalinear (manual oficial)
+              ("C-c C-a" . csv-align-fields)
+              ("C-c C-u" . csv-unalign-fields)
+              ;; Opcionales útiles:
+              ("C-c C-s" . csv-sort-fields)
+              ("C-c C-n" . csv-sort-numeric-fields))
+  :config
+  (add-hook 'csv-mode-hook (lambda () (setq-local truncate-lines t))))
+
+;; VLF: ver/editar/buscar archivos ENORMES por chunks 
+(use-package vlf
+  :demand t
+  :init
+  (require 'vlf-setup)  ;; integra con find-file: te ofrece abrir con VLF si es grande
+   (setq vlf-application 'dont-ask) )
+#+end_src
+
 
 * Confirmación
 #+begin_src emacs-lisp

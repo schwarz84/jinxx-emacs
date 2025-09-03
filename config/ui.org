@@ -8,15 +8,6 @@
     (set-face-attribute 'default nil :font jb :height 110)))
 #+end_src
 
-* Modeline ligero
-#+begin_src emacs-lisp
-(column-number-mode t)
-(set-face-attribute 'mode-line nil :height 100)
-(set-face-attribute 'mode-line-inactive nil :height 100)
-(use-package minions 
-	:config (minions-mode 1))
-#+end_src
-
 * Tema y ligaduras (sin iconos globales)
 #+begin_src emacs-lisp
 (use-package gruvbox-theme
@@ -46,6 +37,20 @@
       "?=" "?." "??" ";;" "/*" "/=" "/>" "//" "__" "(*" "*)" "\\\\"
       "://"))
   (global-ligature-mode 1))
+#+end_src
+
+* Modeline ligero
+#+begin_src emacs-lisp
+(column-number-mode 1)
+(size-indication-mode 1)
+
+;; Modeline más pequeño y plano
+(dolist (face '(mode-line mode-line-inactive))
+  (set-face-attribute face nil :height 90 :box nil))
+
+;; Ocultar minor modes, salvo keycast
+(use-package minions
+  :config (minions-mode 1))
 #+end_src
 
 * Paréntesis y delimitadores
