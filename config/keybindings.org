@@ -79,6 +79,11 @@
 (global-set-key   (kbd "M-<mouse-1>") #'mc/add-cursor-on-click)
 #+end_src
 
+#+begin_src emacs-lisp
+;; Abrir Enlight on-demand
+(global-set-key (kbd "C-c e e") #'enlight-open)
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "keybindings.org cargado")

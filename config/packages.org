@@ -148,10 +148,24 @@
   (expand-region-smart-cursor t)
   (expand-region-subword-enabled t))
 
-;; winner-mode: deshacer/rehacer disposición de ventanas
+;; winner-mode deshacer/rehacer disposición de ventanas
 (use-package winner
   :init
   (winner-mode 1))
+
+;; spatial-navigate — YAML / Python / JSON, sin minor-mode
+(use-package spatial-navigate
+  :demand t
+  :init
+  (dolist (hk '(yaml-mode-hook yaml-ts-mode-hook
+                 python-mode-hook python-ts-mode-hook
+                 json-mode-hook json-ts-mode-hook))
+    (add-hook hk
+              (lambda ()
+                (local-set-key (kbd "M-S-<up>")    #'spatial-navigate-backward-vertical-box)
+                (local-set-key (kbd "M-S-<down>")  #'spatial-navigate-forward-vertical-box)
+                (local-set-key (kbd "M-S-<left>")  #'spatial-navigate-backward-horizontal-box)
+                (local-set-key (kbd "M-S-<right>") #'spatial-navigate-forward-horizontal-box)))))
 #+end_src
 
 * Proyectos, tree y arhcivos
@@ -229,6 +243,10 @@
   :config
   (desktop-save-mode 1)
   (add-hook 'kill-emacs-hook #'desktop-save-in-desktop-dir))
+
+;; Treemacs Magit: actualizar estados Git tras stage/commit desde Magit
+(use-package treemacs-magit
+  :after (treemacs magit))
 #+end_src
 
 * Terminales y multi term
@@ -388,7 +406,6 @@
   (avy-timeout-seconds 0.35))
 
 ;; smartparens
-;; smartparens
 (use-package smartparens
   :hook ((prog-mode . smartparens-mode)
          (org-mode  . smartparens-mode)
@@ -432,6 +449,9 @@
   :config
   (move-text-default-bindings))
 
+;; ws-butler — limpia espacios finales SOLO en líneas editadas
+(use-package ws-butler
+  :hook (prog-mode . ws-butler-mode))
 #+end_src
 
 * Lenguajes y datos
