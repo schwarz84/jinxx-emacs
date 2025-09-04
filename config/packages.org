@@ -70,9 +70,9 @@
 ;; Swiper: búsqueda incremental en buffer con interfaz Ivy
 (use-package swiper
   :after ivy
-  :bind (("C-s"     . swiper-isearch)
+  :bind (("C-S-s"     . swiper-isearch)
          ("C-r"     . swiper-isearch-backward)
-         ("C-S-s"   . swiper)
+         ("C-s"   . swiper)
          ("M-s ."   . swiper-thing-at-point))
   :custom
   (swiper-goto-start-of-match t)
