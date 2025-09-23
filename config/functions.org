@@ -79,8 +79,20 @@
 (add-hook 'eglot-managed-mode-hook #'jinxx/setup-capf-eglot+cape)
 #+end_src
 
+* Helper para instalar gramáticas de Tree-sitter
+#+begin_src emacs-lisp
+  (defun jinxx/install-treesit-grammars ()
+    "Asegura que las gramáticas de Tree-sitter para ciencia de datos estén instaladas."
+    (interactive)
+    (when (fboundp 'treesit-install-language-grammar)
+      (let ((grammars-to-install '(python r julia json yaml toml bash)))
+        (dolist (lang grammars-to-install)
+          (unless (treesit-language-available-p lang)
+            (message "Instalando gramática de Tree-sitter para: %s" lang)
+            (treesit-install-language-grammar lang))))))
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "functions.org cargado")
 #+end_src
-

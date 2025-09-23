@@ -2,6 +2,200 @@
 
 **Minimalista · Modular · Científico**
 
+Una configuración de Emacs optimizada para ciencia de datos, desarrollo de software y escritura técnica. Su arquitectura modular en archivos `.org` y el gestor de paquetes `straight.el` garantizan una instalación limpia, reproducible y personalizable.
+
+---
+
+## Estructura del Proyecto
+
+```text
+jinxx_emacs/
+├── early-init.el         # Optimización de arranque temprano
+├── init.el               # Punto de entrada y cargador de módulos
+├── README.md             # Esta guía
+├── LICENSE.txt
+├── assets/
+│   ├── logo_128.png
+│   ├── logo_256.png
+│   ├── logo_512.png
+│   ├── logo_800.png
+│   └── logo_1024.png
+├── snippets/             # (Opcional) Snippets personales para yasnippet
+└── config/
+    ├── core.org          # Base: straight.el, use-package, gestión de archivos
+    ├── packages.org      # Paquetes para UI, edición, Git y formatos de datos
+    ├── ui.org            # Apariencia: tema, fuentes, modeline
+    ├── keybindings.org   # Atajos de teclado globales
+    ├── functions.org     # Funciones helper personalizadas
+    ├── orgmode.org       # Configuración específica para Org-mode
+    ├── data.org          # (Placeholder para futuras personalizaciones)
+    └── science.org       # ¡El motor! Jupyter, R (ESS), Julia, Notebooks
+```
+
+-----
+
+## Requisitos Externos
+
+Para que Jinxx Emacs funcione a pleno rendimiento, se necesitan algunas dependencias externas. Las siguientes instrucciones son para **Arch Linux**.
+
+### Dependencias Esenciales
+
+Instala las herramientas base con `pacman`:
+
+```bash
+sudo pacman -S emacs git ripgrep libvterm tree-sitter-cli
+```
+
+- **emacs**: El editor (versión 29+ recomendada).
+- **git**: Requerido por `straight.el` para gestionar los paquetes.
+- **ripgrep (`rg`)**: Motor de búsqueda de texto ultrarrápido que potencia `counsel-rg`.
+- **libvterm**: Biblioteca nativa necesaria por el paquete `vterm` para una emulación de terminal de alto rendimiento.
+- **tree-sitter-cli**: Necesario para compilar las gramáticas de Tree-sitter que Emacs usará para un resaltado de sintaxis superior.
+
+### Stack de Ciencia de Datos
+
+#### Python
+
+```bash
+# Instala Python y su gestor de paquetes
+sudo pacman -S python python-pip
+
+# Instala las librerías para notebooks, LSP, formateo y depuración
+pip install jupyterlab notebook ipykernel debugpy basedpyright ruff
+```
+
+- **jupyterlab, notebook, ipykernel**: Para la experiencia de notebook (`emacs-jupyter`, `EIN`).
+- **debugpy**: Para la depuración de código Python (opcional).
+- **basedpyright**: Servidor LSP recomendado para Python; ofrece análisis estático y autocompletado potentes.
+- **ruff**: Linter/formateador moderno y ultrarrápido para código Python.
+
+#### R
+
+```bash
+# Instala el lenguaje R y el servidor LSP desde los repositorios de Arch
+sudo pacman -S r r-languageserver
+```
+
+- **r**: El entorno de computación estadística.
+- **r-languageserver**: El servidor LSP para R, basado en el paquete `languageserver` de CRAN.
+
+#### Julia
+
+```bash
+# Instala Julia desde los repositorios oficiales
+sudo pacman -S julia
+
+# Una vez instalado, inicia Julia y añade los paquetes para el LSP desde su gestor interno
+julia -e 'using Pkg; Pkg.add(["LanguageServer", "SymbolServer"])'
+```
+
+-----
+
+## ¿Cómo Carga Jinxx Emacs?
+
+### `early-init.el` — Optimización Temprana
+
+Este archivo se ejecuta antes de que se cargue la UI de Emacs. Minimiza la carga de elementos visuales (barras de herramientas, menú), ajusta el recolector de basura (`GC`) para un arranque más rápido y activa la compilación nativa (si está disponible).
+
+### `init.el` — Núcleo de Arranque
+
+Es el punto de entrada principal. Carga los módulos de configuración desde la carpeta `config/` de forma ordenada. Utiliza un sistema de **tangle-on-demand**: si existe un `modulo.el` y está actualizado, lo carga; si no, genera el archivo `.el` a partir de `modulo.org` y luego lo carga, asegurando que la configuración esté siempre sincronizada.
+
+**Módulos Cargados:** `core`, `packages`, `ui`, `functions`, `keybindings`, `orgmode`, `data`, `science`.
+
+-----
+
+## Módulos y Funcionalidades Clave
+
+### `packages.org` — Experiencia de Usuario y Edición
+
+- **Interfaz de Usuario:** `ivy`, `counsel`, `swiper` y `helpful` para una navegación y búsqueda de primer nivel.
+- **Gestión de Proyectos:** `projectile` y `treemacs` para una gestión de archivos y proyectos eficiente.
+- **Control de Versiones:** `magit` (la mejor interfaz de Git) con `diff-hl` para ver cambios en tiempo real.
+- **Edición Potenciada:** `multiple-cursors`, `avy` (saltos rápidos), `smartparens` y `yasnippet`.
+- **Formateo Asíncrono:** `apheleia` formatea tu código en segundo plano sin interrumpirte, usando `ruff` para Python.
+- **Formatos de Datos:** Modos dedicados para `YAML`, `JSON`, `TOML` y `CSV`, con soporte mejorado para `Tree-sitter`.
+
+### `science.org` — El Corazón Científico
+
+Este módulo transforma Emacs en una estación de trabajo para ciencia de datos, habilitando tres flujos de trabajo principales:
+
+1. **Notebooks en Org-mode:** A través de **`emacs-jupyter`**, permite conectar bloques de código a kernels de Jupyter para una experiencia interactiva con estado persistente y resultados enriquecidos (tablas, gráficos). Es la forma más reproducible y potente de trabajar.
+2. **Desarrollo Especializado en R y Julia:** Proporciona el mejor soporte posible para estos lenguajes a través de **`ESS`** (Emacs Speaks Statistics) y **`julia-repl`**, con una profunda integración con sus consolas interactivas (REPL).
+3. **Compatibilidad con Notebooks Nativos:** Mediante **`EIN`** (Emacs IPython Notebook), permite abrir, editar y trabajar directamente con archivos `.ipynb` para colaborar con equipos que usan el formato estándar de Jupyter.
+
+-----
+
+## Flujos de Trabajo Científicos: Guía Rápida
+
+### Flujo 1: Notebook en Org-mode (Recomendado)
+
+El método más potente y reproducible, ideal para análisis y reportes.
+
+1. Crea un bloque de código: `#+begin_src jupyter-python ...`
+2. Añade el parámetro de cabecera `:session nombre-sesion` para crear un kernel persistente. Todos los bloques con la misma sesión compartirán variables y estado.
+3. Ejecuta con `C-c C-c`. Los DataFrames de Pandas se mostrarán como tablas de Org y los gráficos de Matplotlib como imágenes directamente en el buffer.
+
+### Flujo 2: REPL-Driven (R con ESS o Julia)
+
+Para exploración de datos, desarrollo de paquetes y depuración profunda.
+
+1. Abre un archivo `.R` o `.jl`.
+2. Inicia la consola interactiva con `M-x R` (para R) o `M-x julia-repl-mode` (para Julia).
+3. Envía código desde tu script a la consola con `C-<return>` (línea) o seleccionando una región y `C-c C-c`. Observa los resultados y el estado de los objetos en tiempo real.
+
+### Flujo 3: Notebooks Nativos (`.ipynb` con EIN)
+
+Para compatibilidad y colaboración con usuarios de Jupyter.
+
+1. **Configuración (una sola vez):**
+   - Para evitar copiar tokens de seguridad, establece una contraseña permanente para Jupyter en tu terminal:
+
+     ```bash
+     jupyter notebook password
+     ```
+
+2. **Uso Diario:**
+   - Inicia el servidor Jupyter en la carpeta de tu proyecto: `jupyter notebook`
+   - En Emacs, conéctate y abre tu notebook: `M-x ein:notebooklist-open`. La primera vez te pedirá la contraseña, luego la recordará.
+
+-----
+
+## Atajos Clave
+
+| Acción                     | Tecla        | Paquete                 |
+|----------------------------|--------------|-------------------------|
+| Ejecutar comando           | `M-x`        | `counsel`               |
+| Buscar archivo en proyecto | `C-c p f`    | `counsel-projectile`    |
+| Buscar texto en proyecto   | `C-c p g`    | `counsel-projectile-rg` |
+| Cambiar de buffer          | `C-x b`      | `counsel`               |
+| Buscar en buffer actual    | `C-s`        | `swiper`                |
+| Magit Status               | `C-x g`      | `magit`                 |
+| Treemacs                   | `M-1`        | `treemacs`              |
+| Alinear columnas CSV/TSV   | `C-c a`      | `csv-mode`              |
+| Ejecutar bloque de código  | `C-c C-c`    | `org-babel` / `jupyter` |
+| Enviar línea a REPL (en R) | `C-<return>` | `ESS`                   |
+
+-----
+
+## Instalación Rápida
+
+1. **Asegúrate de tener todas las [dependencias externas](#requisitos-externos) instaladas.**
+2. **Clonar el repositorio:**
+
+   ```bash
+   # Si tienes una configuración existente, haz una copia de seguridad
+   # mv ~/.emacs.d ~/.emacs.d.bak
+   git clone <URL_DEL_REPO> ~/.emacs.d
+   ```
+
+3. **Primer Arranque:**
+   - Abre Emacs. `straight.el` descargará e instalará todas las dependencias definidas en los módulos. Sé paciente, la primera vez puede tardar varios minutos.
+   - Durante este primer arranque, la configuración **instalará automáticamente las gramáticas de Tree-sitter** que faltan (Python, R, Julia, etc.). Verás mensajes de compilación en el minibuffer. Este proceso es automático y solo se realiza una vez por gramática.
+# Jinxx Emacs
+
+**Minimalista · Modular · Científico**
+
 Configuración de Emacs pensada para ciencia de datos, escritura técnica y desarrollo.
 Arquitectura modular en archivos `.org` + gestor de paquetes **straight.el** para instalación limpia y reproducible.
 

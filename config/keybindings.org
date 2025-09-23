@@ -91,6 +91,12 @@
   (global-set-key (kbd "C-c d b") #'dap-breakpoint-toggle))
 #+end_src
 
+* Keys para CSV
+#+begin_src emacs-lisp
+  ;; Atajo para alinear campos en archivos CSV/TSV
+  (global-set-key (kbd "C-c a") #'csv-align-fields)
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "keybindings.org cargado")

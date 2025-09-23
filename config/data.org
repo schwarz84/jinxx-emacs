@@ -2,6 +2,71 @@
 #+AUTHOR: Charly
 #+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
 
+* Jupyter y Notebooks en Org-mode
+#+begin_src emacs-lisp
+  ;; El puente entre Org-Babel y los kernels de Jupyter. La base de la experiencia notebook.
+  (use-package jupyter
+    :ensure t
+    :after org
+    :init
+    ;; Registra 'jupyter' como un "lenguaje" para Org-Babel
+    (add-to-list 'org-babel-load-languages '(jupyter . t) t)
+    :config
+    ;; Prioriza la visualización de resultados enriquecidos (tablas, gráficos)
+    (setq jupyter-result-mime-type-render-priority
+          '("text/org" "text/markdown" "image/svg+xml" "image/png" "text/plain")))
+
+  ;; (Opcional) Ejecución de bloques de código largos sin congelar Emacs
+  (use-package ob-async
+    :ensure t)
+#+end_src
+
+* Soporte para Notebooks Nativos (.ipynb)
+#+begin_src emacs-lisp
+  (use-package ein
+    :ensure t
+    :config
+    ;; Ajustes para que la interfaz se sienta más integrada
+    (setq ein:output-area-inlined-images t)
+    (setq ein:worksheet-enable-undo t))
+#+end_src
+
+* Soporte para R (Emacs Speaks Statistics)
+#+begin_src emacs-lisp
+  ;; El entorno de desarrollo definitivo para R en Emacs.
+  (use-package ess
+    :ensure t
+    :after eglot
+    :config
+    ;; Asegura que ESS use el LSP de Eglot, no intente iniciar el suyo.
+    (setq ess-use-lsp 'eglot))
+#+end_src
+
+* Soporte para Julia
+#+begin_src emacs-lisp
+  ;; Modo principal para archivos .jl
+  (use-package julia-mode
+    :ensure t)
+
+  ;; Integración con la consola (REPL) de Julia
+  (use-package julia-repl
+    :ensure t
+    :after julia-mode
+    :hook (julia-mode . julia-repl-mode))
+#+end_src
+
+* Soporte para R Markdown (Polymode)
+#+begin_src emacs-lisp
+  ;; Permite que múltiples modos (Markdown + R) coexistan en un mismo archivo.
+  (use-package polymode
+    :ensure t
+    :mode "\\.Rmd\\'")
+
+  (use-package poly-R
+    :ensure t
+    :after polymode)
+#+end_src
+
 ** Confirmación
 #+begin_src emacs-lisp
 (message "data.org cargado correctamente")

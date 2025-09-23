@@ -583,6 +583,42 @@
   )
 #+end_src
 
+* Formatos de Datos (YAML, JSON, CSV, etc.)
+#+begin_src emacs-lisp
+  ;; Modo para archivos YAML (.yml, .yaml)
+  (use-package yaml-mode
+    :mode "\\.ya?ml\\'")
+
+  ;; Modo para archivos JSON y variantes
+  (use-package json-mode
+    :mode ("\\.json\\'" . json-mode)
+    :config
+    ;; (Opcional) Habilitar soporte para tree-sitter si está disponible
+    (add-hook 'json-mode-hook #'json-mode-maybe-enable-pretty-mode))
+
+  ;; Modo para archivos TOML (común en configuraciones de Python con pyproject.toml)
+  (use-package toml-mode
+    :mode "\\.toml\\'")
+
+  ;; Modo para archivos de valores separados por comas (y tabuladores)
+  ;; NOTA: Esto reemplazará tu bloque de csv-mode existente para unificar la configuración.
+  (use-package csv-mode
+    :mode (("\\.csv\\'" . csv-mode)
+           ;; Fix para TSV: Mapeamos la extensión .tsv a csv-mode para un manejo unificado.
+           ("\\.tsv\\'" . csv-mode))
+    :init
+    ;; Le enseñamos a csv-mode a reconocer también tabuladores como separadores.
+    (setq csv-separators '(";" "," "\t")))
+
+  ;; si las gramáticas correspondientes están instaladas.
+  (use-package treesit-auto
+    :if (fboundp 'treesit-available-p) ; Solo se activa si tu Emacs soporta Tree-sitter
+    :config
+    (global-treesit-auto-mode 1)
+    ;; LLAMADA A LA FUNCIÓN DE INSTALACIÓN AUTOMÁTICA
+    (jinxx/install-treesit-grammars))
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "packages.org cargado")
