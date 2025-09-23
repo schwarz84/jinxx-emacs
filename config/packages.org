@@ -94,6 +94,12 @@
   (when (fboundp 'ivy-rich-project-root-cache-mode)
     (ivy-rich-project-root-cache-mode +1)))
 
+(use-package ivy-xref
+  :after ivy
+  :init
+  (setq xref-show-xrefs-function        #'ivy-xref-show-xrefs
+        xref-show-definitions-function  #'ivy-xref-show-defs))
+
 ;; Smex: prioriza los comandos más usados en M-x (lo aprovecha counsel-M-x)
 (use-package smex
   :after counsel
@@ -155,7 +161,6 @@
 
 ;; spatial-navigate — YAML / Python / JSON, sin minor-mode
 (use-package spatial-navigate
-  :demand t
   :init
   (dolist (hk '(yaml-mode-hook yaml-ts-mode-hook
                  python-mode-hook python-ts-mode-hook
@@ -200,7 +205,6 @@
         ("i" . projectile-invalidate-cache))        ;; C-c p i
   :config
   (counsel-projectile-mode 1))
-
 
 ;; Treemacs
 (use-package treemacs
@@ -350,8 +354,8 @@
   :hook
   ((after-init . pulsar-global-mode)
    (next-error . pulsar-pulse-line))
-  :bind (("C-c l p" . pulsar-pulse-line)
-         ("C-c l h" . pulsar-highlight-line))
+  :bind (("C-c u p" . pulsar-pulse-line)
+         ("C-c u h" . pulsar-highlight-line))
   :config
   ;; Amplío triggers para tu stack Ivy/Counsel + navegación
   (dolist (fn '(recenter-top-bottom
@@ -408,8 +412,7 @@
 ;; smartparens
 (use-package smartparens
   :hook ((prog-mode . smartparens-mode)
-         (org-mode  . smartparens-mode)
-         (smartparens-mode . smartparens-strict-mode)) ;; estricta cuando se activa
+         (org-mode  . smartparens-mode))
   :config
   (require 'smartparens-config)
   (show-smartparens-global-mode 1)
@@ -450,8 +453,8 @@
   (move-text-default-bindings))
 
 ;; ws-butler — limpia espacios finales SOLO en líneas editadas
-(use-package ws-butler
-  :hook (prog-mode . ws-butler-mode))
+;;(use-package ws-butler
+;;  :hook (prog-mode . ws-butler-mode))
 #+end_src
 
 * Lenguajes y datos
@@ -487,6 +490,98 @@
    (setq vlf-application 'dont-ask) )
 #+end_src
 
+* Undo predecible + histórico entre sesiones + árbol visual (recomendado)
+#+begin_src emacs-lisp
+;; Límites razonables
+(setq undo-limit 800000
+      undo-strong-limit 12000000
+      undo-outer-limit 128000000)
+
+;; Undo/Redo lineal sobre el backend nativo
+(use-package undo-fu
+  :bind (("C-/" . undo-fu-only-undo)     ;; deshacer
+         ("C-?" . undo-fu-only-redo)))   ;; rehacer (C-S-/)
+
+;; Historial de undo entre sesiones (a disco)
+(use-package undo-fu-session
+  :after undo-fu
+  :init
+  (setq undo-fu-session-directory
+        (expand-file-name "var/undo/" user-emacs-directory)
+        undo-fu-session-linear t)        ;; guarda lineal, sin ramas
+  :config
+  (undo-fu-session-global-mode 1))
+
+;; Arbol visual
+(use-package vundo
+  :commands (vundo)
+  :bind (("C-x u" . vundo))               ;; abrí el árbol cuando lo necesites
+  :config
+  (setq vundo-glyph-alist vundo-unicode-symbols
+        vundo-compact-display t))
+#+end_src
+
+* IDE Minimo
+#+begin_src emacs-lisp
+(use-package corfu
+  :demand t
+  :init
+  (setq corfu-auto t          ;; popup automático (desactivá si preferís M-TAB manual)
+        corfu-auto-delay 0.15
+        corfu-auto-prefix 2
+        corfu-quit-no-match t
+        corfu-scroll-margin 4)
+  (global-corfu-mode 1))
+
+;; Tooltips de documentación en el popup (builtin en Corfu)
+(with-eval-after-load 'corfu
+  (setq corfu-popupinfo-delay 0.25)
+  (corfu-popupinfo-mode 1))
+
+;; CAPE: fuentes extra (dabbrev, archivos, keywords) que se combinan con Eglot
+(use-package cape
+  :commands (cape-dabbrev cape-file cape-keyword cape-capf-super))
+
+;; Eglot: cliente LSP builtin
+(use-package eglot
+  :commands (eglot eglot-ensure)
+  :hook ((python-mode python-ts-mode
+          ess-r-mode  r-mode
+          julia-mode  julia-ts-mode)
+         . eglot-ensure)
+  :init
+  (setq eglot-autoshutdown t)
+  :config
+  (add-to-list 'eglot-server-programs
+               '((python-mode python-ts-mode)
+                 . ("basedpyright-langserver" "--stdio")))
+  ;; R languageserver 
+  (add-to-list 'eglot-server-programs
+               '((ess-r-mode r-mode)
+                 . ("R" "--slave" "-e" "languageserver::run()")))
+  ;; Julia LanguageServer.jl
+  (add-to-list 'eglot-server-programs
+               '((julia-mode julia-ts-mode)
+                 . ("julia" "--startup-file=no" "--history-file=no"
+                    "-e" "using LanguageServer,SymbolServer; runserver()"))))
+
+;;; ---- Debug (opcional, on-demand) ----
+(use-package dap-mode
+  :after eglot
+  :commands (dap-debug dap-debug-last dap-breakpoint-toggle)
+  :init
+  ;; Config mínima: no UI pesada; sólo lo útil cuando se invoque
+  (setq dap-auto-configure-features '(sessions locals controls tooltip))
+  :config
+  (dap-auto-configure-mode 1)   ;; respeta la lista de features de arriba
+  ;; Python con debugpy
+  (require 'dap-python)
+  ;; Si usás conda/venv, dejá que tome "python" del entorno activo
+  ;; (setq dap-python-executable "python")
+  ;; Plantillas útiles (corre el buffer actual, módulo, etc.)
+  ;; (dap-python-debugger 'debugpy) ;; es el default
+  )
+#+end_src
 
 * Confirmación
 #+begin_src emacs-lisp

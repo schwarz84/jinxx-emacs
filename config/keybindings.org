@@ -84,6 +84,13 @@
 (global-set-key (kbd "C-c e e") #'enlight-open)
 #+end_src
 
+#+begin_src emacs-lis
+(with-eval-after-load 'dap-mode
+  (global-set-key (kbd "C-c d d") #'dap-debug)
+  (global-set-key (kbd "C-c d l") #'dap-debug-last)
+  (global-set-key (kbd "C-c d b") #'dap-breakpoint-toggle))
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "keybindings.org cargado")

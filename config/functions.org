@@ -64,6 +64,21 @@
       (vterm-toggle-cd))))
 #+end_src
 
+* Helper para usar Eglot + Cape
+#+begin_src emacs-lisp
+;; Combina el CAPF de Eglot con dabbrev/file/keyword de Cape sin pisarlo
+(defun jinxx/setup-capf-eglot+cape ()
+  "Super-CAPF: Eglot + dabbrev + file + keyword."
+  (setq-local completion-at-point-functions
+              (list (cape-capf-super
+                     #'eglot-completion-at-point
+                     #'cape-dabbrev
+                     #'cape-file
+                     #'cape-keyword))))
+
+(add-hook 'eglot-managed-mode-hook #'jinxx/setup-capf-eglot+cape)
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "functions.org cargado")

@@ -1,5 +1,7 @@
 ;;; init.el --- Punto de entrada principal para jinxx_emacs -*- lexical-binding: t; -*-
+;;; Commentary:
 
+;;; Code:
 (require 'subr-x)
 
 ;; Restauración post-arranque
@@ -34,10 +36,11 @@
   "Módulos que componen la configuración.")
 
 (defun jinxx--module-path (base ext)
+  "(BASE) (EXT) cargan todos los modulos de la carpeta base."
   (expand-file-name (format "config/%s.%s" base ext) user-emacs-directory))
 
 (defun jinxx--file-newer-p (a b)
-  "Si esta mas actualizado lo recarga"
+  "Si el archivo (A) es esta mas actualizado (B) lo recarga."
   (let ((fa (and (file-exists-p a) (file-attributes a)))
         (fb (and (file-exists-p b) (file-attributes b))))
     (cond
@@ -48,7 +51,7 @@
      (t nil))))
 
 (defun jinxx--maybe-tangle-and-load (mod)
-  "Carga el .el si está al día; si falta o está viejo, tanglea el .org y carga."
+  "Carga el (MOD) si está al día; si falta o está viejo, tanglea el .org y carga."
   (let* ((org (jinxx--module-path mod "org"))
          (el  (jinxx--module-path mod "el")))
     (cond
