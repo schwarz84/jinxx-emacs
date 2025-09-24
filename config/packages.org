@@ -619,6 +619,45 @@
     (jinxx/install-treesit-grammars))
 #+end_src
 
+* Gestión de Entornos (Conda)
+#+begin_src emacs-lisp
+  ;; (LSP, Jupyter, terminales), asegurando que se usen las librerías correctas.
+  (use-package conda
+    :ensure t
+    :config
+    ;; Asegúrate de que esta ruta sea correcta para tu sistema.
+    (setq conda-anaconda-home (expand-file-name "~/anaconda3")) ; O "~/miniconda3"
+    (conda-env-initialize-interactive-shells)
+    (conda-env-initialize-eshell))
+#+end_src
+
+* Contenedores (Docker)
+#+begin_src emacs-lisp
+  ;; Proporciona resaltado de sintaxis para archivos Dockerfile.
+  (use-package dockerfile-mode
+    :ensure t)
+
+  ;; Una interfaz completa para gestionar contenedores, imágenes, volúmenes, etc.,
+  (use-package docker
+    :ensure t
+    :commands (docker-containers docker-images))
+#+end_src
+
+* Herramientas de Calidad y Estilo
+#+begin_src emacs-lisp
+  ;; definidas en un archivo .editorconfig en la raíz de un proyecto.
+  (use-package editorconfig
+    :ensure t
+    :config
+    (editorconfig-mode 1))
+
+  ;; Corrector ortográfico moderno y minimalista en tiempo real.
+  (use-package jinx
+    :ensure t
+    :hook (text-mode . jinx-mode)
+    :bind (("M-$" . jinx-correct-word)))
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "packages.org cargado")

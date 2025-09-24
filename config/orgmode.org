@@ -7,6 +7,27 @@
       org-edit-src-content-indentation 0)
 #+end_src
 
+* Diagramas como Código (Mermaid)
+#+begin_src emacs-lisp
+  ;; Permite crear diagramas de flujo, arquitecturas, etc., usando texto simple.
+  (use-package mermaid-mode
+    :ensure t)
+
+  ;; Habilitar la ejecución de bloques de Mermaid en Org-Babel para renderizar y exportar.
+  (with-eval-after-load 'org
+    (add-to-list 'org-babel-load-languages '(mermaid . t) t)
+    ;; Esto es necesario para exportar los diagramas a imágenes (PNG, SVG).
+    (setq org-mermaid-cli-path "mmdc"))
+#+end_src
+
+* Gestión de Conocimiento y Referencias (PDF Tools)
+#+begin_src emacs-lisp
+  ;; Fundamental para la revisión de literatura y la toma de notas sobre papers.
+  (use-package org-pdftools
+    :ensure t
+    :hook (org-mode . org-pdftools-setup-link))
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "orgmode.org cargado")
