@@ -23,12 +23,14 @@
 
 * Soporte para Notebooks Nativos (.ipynb)
 #+begin_src emacs-lisp
-  (use-package ein
-    :ensure t
-    :config
-    ;; Ajustes para que la interfaz se sienta más integrada
-    (setq ein:output-area-inlined-images t)
-    (setq ein:worksheet-enable-undo t))
+(use-package ein
+  :ensure t
+  :config
+  ;; Línea nueva:
+  (add-to-list 'auto-mode-alist '("\\.ipynb\\'" . ein:notebook-mode))
+  ;; Tus otras configuraciones:
+  (setq ein:output-area-inlined-images t)
+  (setq ein:worksheet-enable-undo t))
 #+end_src
 
 * Soporte para R (Emacs Speaks Statistics)

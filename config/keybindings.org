@@ -97,6 +97,13 @@
   (global-set-key (kbd "C-c a") #'csv-align-fields)
 #+end_src
 
+* Keys para Jupyter Notebooks (EIN)
+#+begin_src emacs-lisp
+(global-set-key (kbd "C-c j n") #'ein:notebooklist-open)
+(with-eval-after-load 'ein
+  (define-key ein:notebook-mode-map (kbd "C-c j k") #'ein:worksheet-kill-kernel-and-delete-buffer))
+#+end_src
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "keybindings.org cargado")
