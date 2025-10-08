@@ -8,10 +8,8 @@
   (use-package jupyter
     :ensure t
     :after org
-    :init
-    ;; Registra 'jupyter' como un "lenguaje" para Org-Babel
-    (add-to-list 'org-babel-load-languages '(jupyter . t) t)
     :config
+    (add-to-list 'org-babel-load-languages '(jupyter . t) t)
     ;; Prioriza la visualización de resultados enriquecidos (tablas, gráficos)
     (setq jupyter-result-mime-type-render-priority
           '("text/org" "text/markdown" "image/svg+xml" "image/png" "text/plain")))
@@ -73,4 +71,3 @@
 #+begin_src emacs-lisp
 (message "data.org cargado correctamente")
 #+end_src
-

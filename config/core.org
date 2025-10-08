@@ -25,6 +25,7 @@
       straight-disable-native-compile t)
 
 (straight-use-package 'use-package)
+(straight-use-package 'org)
 
 (setq use-package-always-defer t
       use-package-expand-minimally t

@@ -81,7 +81,7 @@
 ;; Ivy-Rich: columnas extra (modo, proyecto, ruta, tamaño, etc.) en Ivy/Counsel
 (use-package ivy-rich
   :demand t
-  :after counsel
+  :after (counsel projectile)
   :init
   (ivy-rich-mode 1)
   :custom
@@ -143,6 +143,7 @@
 
 ;; Selección incremental
 (use-package expand-region
+  :after treesit
   :commands (er/expand-region er/contract-region)
   :bind (("C-=" . er/expand-region)
          ("C--" . er/contract-region))
@@ -395,6 +396,7 @@
 
 ;; smartparens
 (use-package smartparens
+  :after org
   :hook ((prog-mode . smartparens-mode)
          (org-mode  . smartparens-mode))
   :config

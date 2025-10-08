@@ -1,35 +1,50 @@
 #+TITLE: orgmode.org
 #+PROPERTY: header-args:emacs-lisp :tangle yes :results silent
 
-* Edicion de bloques ORG
 #+begin_src emacs-lisp
-(setq org-src-tab-acts-natively t
-      org-edit-src-content-indentation 0)
+(use-package org
+  :mode ("\\.org\\'" . org-mode)
+  :config
+  (setq org-src-tab-acts-natively t
+        org-edit-src-content-indentation 0
+        org-support-shift-select t
+        org-confirm-babel-evaluate nil)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((shell . t)
+     (emacs-lisp . t)))
+  (setq org-mermaid-cli-path "mmdc"))
 #+end_src
 
-* Diagramas como Código (Mermaid)
+* Diagramas (Mermaid)
 #+begin_src emacs-lisp
-  ;; Permite crear diagramas de flujo, arquitecturas, etc., usando texto simple.
   (use-package mermaid-mode
-    :ensure t)
-
-  ;; Habilitar la ejecución de bloques de Mermaid en Org-Babel para renderizar y exportar.
-  (with-eval-after-load 'org
-    (add-to-list 'org-babel-load-languages '(mermaid . t) t)
-    ;; Esto es necesario para exportar los diagramas a imágenes (PNG, SVG).
-    (setq org-mermaid-cli-path "mmdc"))
+    :ensure t
+    :config
+    (add-to-list 'org-babel-load-languages '(mermaid . t)))
 #+end_src
 
-* Gestión de Conocimiento y Referencias (PDF Tools)
+* PDFs, Anotaciones y Notas Sincronizadas
 #+begin_src emacs-lisp
-  ;; Fundamental para la revisión de literatura y la toma de notas sobre papers.
+  (use-package pdf-tools
+    :ensure t
+    :config
+    (pdf-tools-install :no-query))
+
   (use-package org-pdftools
     :ensure t
+    :after pdf-tools
     :hook (org-mode . org-pdftools-setup-link))
+
+  (use-package org-noter
+    :ensure t
+    :after (org pdf-tools)
+    :config
+    (setq org-noter-notes-window-location 'other-window)
+    (require 'org-noter-pdf))
 #+end_src
 
 * Confirmación
 #+begin_src emacs-lisp
-(message "orgmode.org cargado")
+(message "orgmode.org cargado (versión final con org-noter)")
 #+end_src
-
