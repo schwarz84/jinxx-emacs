@@ -4,6 +4,34 @@
 ;;; Code:
 (require 'subr-x)
 
+(setq use-package-compute-statistics t)
+
+(defvar bootstrap-version)
+(let* ((bootstrap-file (expand-file-name
+                        "straight/repos/straight.el/bootstrap.el"
+                        user-emacs-directory))
+       (bootstrap-version 6)
+       (install-url
+        "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer (url-retrieve-synchronously install-url 'silent 'inhibit-cookies)
+      (goto-char (point-min))
+      (re-search-forward "\n\n")
+      (eval-region (point) (point-max))))
+  (load bootstrap-file nil 'nomessage))
+
+(setq straight-use-package-by-default t
+      straight-vc-git-default-clone-depth 1
+      straight-check-for-modifications '(find-when-checking)
+      straight-disable-native-compile t)
+
+(straight-use-package 'use-package)
+(straight-use-package 'org)
+
+(setq use-package-always-defer t
+      use-package-expand-minimally t
+      use-package-verbose nil)
+
 ;; Restauración post-arranque
 (add-hook 'emacs-startup-hook
           (lambda ()
