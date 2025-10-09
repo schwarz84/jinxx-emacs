@@ -567,22 +567,22 @@
                  . ("julia" "--startup-file=no" "--history-file=no"
                     "-e" "using LanguageServer,SymbolServer; runserver()"))))
 
-;;; ---- Debug (opcional, on-demand) ----
 (use-package dap-mode
   :after eglot
   :commands (dap-debug dap-debug-last dap-breakpoint-toggle)
   :init
-  ;; Config mínima: no UI pesada; sólo lo útil cuando se invoque
   (setq dap-auto-configure-features '(sessions locals controls tooltip))
   :config
-  (dap-auto-configure-mode 1)   ;; respeta la lista de features de arriba
-  ;; Python con debugpy
-  (require 'dap-python)
-  ;; Si usás conda/venv, dejá que tome "python" del entorno activo
-  ;; (setq dap-python-executable "python")
-  ;; Plantillas útiles (corre el buffer actual, módulo, etc.)
-  ;; (dap-python-debugger 'debugpy) ;; es el default
-  )
+  (dap-auto-configure-mode 1)
+  (require 'dap-python))
+
+;; Flycheck: Linter moderno para mostrar errores en tiempo real
+(use-package flycheck
+  :demand t
+  :init
+  (global-flycheck-mode 1)
+  :config
+  (add-hook 'eglot-managed-mode-hook #'flycheck-eglot-mode))
 #+end_src
 
 * Formatos de Datos (YAML, JSON, CSV, etc.)
@@ -623,14 +623,14 @@
 
 * Gestión de Entornos (Conda)
 #+begin_src emacs-lisp
-  ;; (LSP, Jupyter, terminales), asegurando que se usen las librerías correctas.
-  (use-package conda
-    :ensure t
-    :config
-    ;; Asegúrate de que esta ruta sea correcta para tu sistema.
-    (setq conda-anaconda-home (expand-file-name "~/anaconda3")) ; O "~/miniconda3"
-    (conda-env-initialize-interactive-shells)
-    (conda-env-initialize-eshell))
+(use-package conda
+  :ensure t
+  :init
+  (setq conda-auto-activate 'prompt)
+  :config
+  (setq conda-anaconda-home (expand-file-name "~/miniconda3")) ; o "~/anaconda3"
+  (conda-env-initialize-interactive-shells)
+  (conda-env-initialize-eshell))
 #+end_src
 
 * Contenedores (Docker)
