@@ -60,7 +60,7 @@
 
 ;; Lista y carga modular
 (defconst jinxx-modules
-  '("core" "packages" "ui" "functions" "keybindings" "data" "orgmode")
+  '("core" "packages" "ui" "data" "orgmode" "functions" "keybindings")
   "Módulos que componen la configuración.")
 
 (defun jinxx--module-path (base ext)

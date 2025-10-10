@@ -26,8 +26,8 @@
   :demand t
   :mode ("\\.ipynb\\'" . ein:notebook-mode)
   :hook (ein:notebook-mode . ein:login-at-notebook-start)
+  :bind (("C-c j n" . ein:notebooklist-open))
   :config
-  ;; Tus otras configuraciones:
   (setq ein:output-area-inlined-images t)
   (setq ein:worksheet-enable-undo t))
 #+end_src

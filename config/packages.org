@@ -233,22 +233,6 @@
   :config
   (treemacs-load-theme "nerd-icons"))
 
-;; Sesión global persistente
-(use-package desktop
-  :ensure nil
-  :demand t
-  :init
-  (let ((dir (expand-file-name "var/desktop/" user-emacs-directory)))
-    (setq desktop-dirname             dir
-          desktop-path                (list dir)
-          desktop-save                t
-          desktop-auto-save-timeout   60
-          desktop-load-locked-desktop t)
-    (unless (file-directory-p dir) (make-directory dir t)))
-  :config
-  (desktop-save-mode 1)
-  (add-hook 'kill-emacs-hook #'desktop-save-in-desktop-dir))
-
 ;; Treemacs Magit: actualizar estados Git tras stage/commit desde Magit
 (use-package treemacs-magit
   :after (treemacs magit))
