@@ -23,9 +23,10 @@
 #+begin_src emacs-lisp
 (use-package ein
   :ensure t
+  :demand t
+  :mode ("\\.ipynb\\'" . ein:notebook-mode)
+  :hook (ein:notebook-mode . ein:login-at-notebook-start)
   :config
-  ;; Línea nueva:
-  (add-to-list 'auto-mode-alist '("\\.ipynb\\'" . ein:notebook-mode))
   ;; Tus otras configuraciones:
   (setq ein:output-area-inlined-images t)
   (setq ein:worksheet-enable-undo t))
