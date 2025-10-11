@@ -456,22 +456,6 @@
 
 * Leer archivos cvs grandes y pequenios
 #+begin_src emacs-lisp
-;; CSV/TSV
-(use-package csv-mode
-  :mode (("\\.csv\\'" . csv-mode)
-         ("\\.tsv\\'" . tsv-mode))
-  :init
-    (setq csv-separators '("," ";" "\t"))
-  :bind (:map csv-mode-map
-              ;; Alinear/desalinear (manual oficial)
-              ("C-c C-a" . csv-align-fields)
-              ("C-c C-u" . csv-unalign-fields)
-              ;; Opcionales útiles:
-              ("C-c C-s" . csv-sort-fields)
-              ("C-c C-n" . csv-sort-numeric-fields))
-  :config
-  (add-hook 'csv-mode-hook (lambda () (setq-local truncate-lines t))))
-
 ;; VLF: ver/editar/buscar archivos ENORMES por chunks 
 (use-package vlf
   :demand t
@@ -575,38 +559,44 @@
 
 * Formatos de Datos (YAML, JSON, CSV, etc.)
 #+begin_src emacs-lisp
-  ;; Modo para archivos YAML (.yml, .yaml)
-  (use-package yaml-mode
-    :mode "\\.ya?ml\\'")
+;; Modo para archivos YAML (.yml, .yaml)
+(use-package yaml-mode
+  :mode "\\.ya?ml\\'")
 
-  ;; Modo para archivos JSON y variantes
-  (use-package json-mode
-    :mode ("\\.json\\'" . json-mode)
-    :config
-    ;; (Opcional) Habilitar soporte para tree-sitter si está disponible
-    (add-hook 'json-mode-hook #'json-mode-maybe-enable-pretty-mode))
+;; Modo para archivos JSON y variantes
+(use-package json-mode
+  :mode ("\\.json\\'" . json-mode)
+  :config
+  ;; (Opcional) Habilitar soporte para tree-sitter si está disponible
+  (add-hook 'json-mode-hook #'json-mode-maybe-enable-pretty-mode))
 
-  ;; Modo para archivos TOML (común en configuraciones de Python con pyproject.toml)
-  (use-package toml-mode
-    :mode "\\.toml\\'")
+;; Modo para archivos TOML (común en configuraciones de Python con pyproject.toml)
+(use-package toml-mode
+  :mode "\\.toml\\'")
 
-  ;; Modo para archivos de valores separados por comas (y tabuladores)
-  ;; NOTA: Esto reemplazará tu bloque de csv-mode existente para unificar la configuración.
-  (use-package csv-mode
-    :mode (("\\.csv\\'" . csv-mode)
-           ;; Fix para TSV: Mapeamos la extensión .tsv a csv-mode para un manejo unificado.
-           ("\\.tsv\\'" . csv-mode))
-    :init
-    ;; Le enseñamos a csv-mode a reconocer también tabuladores como separadores.
-    (setq csv-separators '(";" "," "\t")))
+(use-package csv-mode
+  :mode (("\\.csv\\'" . csv-mode)
+         ("\\.tsv\\'" . csv-mode))
+  :init
+  (setq csv-separators '(";" "," "\t"))
 
-  ;; si las gramáticas correspondientes están instaladas.
-  (use-package treesit-auto
-    :if (fboundp 'treesit-available-p) ; Solo se activa si tu Emacs soporta Tree-sitter
-    :config
-    (global-treesit-auto-mode 1)
-    ;; LLAMADA A LA FUNCIÓN DE INSTALACIÓN AUTOMÁTICA
-    (jinxx/install-treesit-grammars))
+  :bind (:map csv-mode-map
+              ("C-c C-a" . csv-align-fields)
+              ("C-c C-u" . csv-unalign-fields)
+              ;; Opcionales útiles
+              ("C-c C-s" . csv-sort-fields)
+              ("C-c C-n" . csv-sort-numeric-fields))
+  :config
+  ;; Mantener líneas largas sin wrap para facilitar lectura tabular.
+  (add-hook 'csv-mode-hook (lambda () (setq-local truncate-lines t))))
+
+;; si las gramáticas correspondientes están instaladas.
+(use-package treesit-auto
+  :if (fboundp 'treesit-available-p) ; Solo se activa si tu Emacs soporta Tree-sitter
+  :config
+  (global-treesit-auto-mode 1)
+  ;; LLAMADA A LA FUNCIÓN DE INSTALACIÓN AUTOMÁTICA
+  (jinxx/install-treesit-grammars))
 #+end_src
 
 * Gestión de Entornos (Conda)
@@ -616,7 +606,12 @@
   :init
   (setq conda-auto-activate 'prompt)
   :config
-  (setq conda-anaconda-home (expand-file-name "~/miniconda3")) ; o "~/anaconda3"
+  (let* ((env-home (getenv "CONDA_HOME"))
+         (conda-home (if (and env-home (not (string-equal env-home "")))
+                         (expand-file-name env-home)
+                       (expand-file-name "~/miniconda3"))))
+    (setq conda-anaconda-home conda-home
+          conda-env-home-directory conda-home))
   (conda-env-initialize-interactive-shells)
   (conda-env-initialize-eshell))
 #+end_src
@@ -631,6 +626,38 @@
   (use-package docker
     :ensure t
     :commands (docker-containers docker-images))
+#+end_src
+
+* Trabajo remoto y servidores
+#+begin_src emacs-lisp
+  (use-package tramp
+    :ensure nil
+    :defer t
+    :init
+    (setq tramp-default-method "ssh"
+          tramp-verbose 1)
+    :config
+    ;; Heredar el PATH remoto para que herramientas como python, julia, etc. se encuentren correctamente.
+    (add-to-list 'tramp-remote-path 'tramp-own-remote-path))
+
+  (if (locate-library "tramp-container")
+      (with-eval-after-load 'tramp
+        (require 'tramp-container))
+    (use-package docker-tramp
+      :ensure t
+      :after tramp
+      :custom
+      (docker-tramp-use-names t)))
+
+  ;; Reusar agentes SSH existentes (útil para repos y servidores remotos)
+  (use-package ssh-agency
+    :ensure t
+    :after tramp
+    :config
+    (when (require 'ssh-agency nil 'noerror)
+      (if (fboundp 'ssh-agency-mode)
+          (ssh-agency-mode 1)
+        (message "ssh-agency cargado; usa M-x ssh-agency-add-key si es necesario."))))
 #+end_src
 
 * Herramientas de Calidad y Estilo

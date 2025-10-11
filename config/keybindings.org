@@ -80,8 +80,9 @@
 #+end_src
 
 #+begin_src emacs-lisp
-;; Abrir Enlight on-demand
-(global-set-key (kbd "C-c e e") #'enlight-open)
+;; Abrir Enlight solo si la función está disponible
+(when (fboundp 'enlight-open)
+  (global-set-key (kbd "C-c e e") #'enlight-open))
 #+end_src
 
 #+begin_src emacs-lisp

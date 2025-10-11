@@ -45,6 +45,50 @@ sudo pacman -S emacs git ripgrep libvterm tree-sitter-cli
 - **libvterm**: Biblioteca nativa para la emulación de terminal de alto rendimiento con `vterm`.
 - **tree-sitter-cli**: Necesario para compilar las gramáticas de Tree-sitter.
 
+### Otras plataformas
+
+#### Debian/Ubuntu
+
+```bash
+sudo apt update
+sudo apt install emacs git ripgrep libvterm-dev build-essential cmake curl
+```
+
+- `libvterm-dev` y `cmake` son necesarios para compilar el módulo nativo de `vterm`.
+- Si tu repositorio de distribución no incluye Emacs 29+, añade el PPA oficial: `sudo add-apt-repository ppa:ubuntu-elisp/ppa`.
+
+#### Fedora
+
+```bash
+sudo dnf install emacs git ripgrep libvterm-devel cmake make gcc-c++
+```
+
+- Fedora ya incluye Emacs reciente; si usas Silverblue/Kinoite instala los paquetes con `rpm-ostree`.
+
+#### macOS (Homebrew)
+
+```bash
+brew install emacs-plus@29 git ripgrep cmake libtool coreutils
+brew install --cask iterm2   # Opcional, para un terminal con soporte pleno de 24 bits
+```
+
+- Reemplaza `emacs-plus@29` por la fórmula que prefieras (`emacs-mac`, etc.).
+- Tras la instalación ejecuta `brew doctor` para asegurarte de que Homebrew exporta los binarios en tu `PATH`.
+
+#### Windows 10/11 (MSYS2/Chocolatey)
+
+```powershell
+choco install emacs git ripgrep cmake
+```
+
+1. Instala [MSYS2](https://www.msys2.org/) y, desde la terminal `MSYS2 UCRT64`, ejecuta:
+   ```bash
+   pacman -S --needed base-devel mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-libvterm
+   ```
+2. Asegúrate de que `C:\msys64\ucrt64\bin` esté en tu variable de entorno `PATH` para que Emacs encuentre `libvterm`.
+
+> 💡 **Consejo:** Si trabajas en entornos restringidos donde no puedes instalar paquetes del sistema, instala `ripgrep` y `tree-sitter-cli` dentro de un entorno Conda o virtualenv y apunta `exec-path` a ese directorio.
+
 ### Stack de Ciencia de Datos
 
 #### Python (Recomendado con Miniconda/Anaconda)
@@ -61,6 +105,9 @@ pip install jupyterlab notebook ipykernel debugpy basedpyright black isort
 - **debugpy**: Para la depuración de código Python (`dap-mode`).
 - **basedpyright**: Servidor LSP recomendado para Python.
 - **black, isort**: Formateadores de código.
+
+Establece la variable de entorno `CONDA_HOME` para señalar tu instalación de Conda si no resides en `~/miniconda3` o `~/anaconda3`. Por ejemplo: `export CONDA_HOME=$HOME/mambaforge`. La configuración detectará automáticamente el valor y lo usará tanto para `conda-anaconda-home` como para `conda-env-home-directory`.
+
 
 #### R y Julia (Opcional)
 
@@ -93,6 +140,7 @@ julia -e 'using Pkg; Pkg.add(["LanguageServer", "SymbolServer"])'
 - **Control de Versiones Superior**: `magit` para una interfaz de Git completa y `diff-hl` para visualizar cambios en el margen.
 - **Terminal Integrada**: `vterm` como terminal rápida, con un atajo para abrirla en la raíz del proyecto actual.
 - **Gestión de Entornos**: Se integra con **Conda** para detectar y activar automáticamente el entorno de Python correcto para cada proyecto.
+- **Trabajo Remoto**: Configuración lista para usar con **TRAMP** (`ssh` por defecto), soporte para contenedores mediante el método nativo `tramp-container` (o `docker-tramp` en Emacs antiguos) y reutilización de credenciales con `ssh-agency`.
 
 ### Flujos de Trabajo para Ciencia de Datos
 
