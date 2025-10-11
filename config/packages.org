@@ -174,7 +174,7 @@
                 (local-set-key (kbd "M-S-<right>") #'spatial-navigate-forward-horizontal-box)))))
 #+end_src
 
-* Proyectos, tree y arhcivos
+* Proyectos, tree y archivos
 #+begin_src emacs-lisp
 ;; Projectile con Ivy como frontend
 (use-package projectile
@@ -184,11 +184,14 @@
   	(projectile-indexing-method 'alien)
   	(projectile-enable-caching t)
   :bind-keymap
-  	("C-c p" . projectile-command-map)   ;; <-- evita el void-variable
-  :init
-  	(setq projectile-project-search-path '("~/Proyectos" "~/Sandbox"))
+  	("C-c p" . projectile-command-map)
   :config
+  	(setq projectile-project-search-path
+              '(("~/Proyectos" . 1 ) ("~/Sandbox" . 1)))
   	(projectile-mode 1))
+
+(with-eval-after-load 'projectile
+  (add-hook 'emacs-startup-hook #'projectile-discover-projects-in-search-path))
 
 ;; Counsel projectile
 (use-package counsel-projectile
@@ -203,7 +206,8 @@
         ("g" . counsel-projectile-rg)               ;; C-c p g
         ("b" . counsel-projectile-switch-to-buffer) ;; C-c p b
         ("k" . project-kill-buffers)                ;; C-c p k
-        ("i" . projectile-invalidate-cache))        ;; C-c p i
+        ("i" . projectile-invalidate-cache)         ;; C-c p i
+        ("d" . projectile-discover-project-in-search-path)) ;; C-c p d
   :config
   (counsel-projectile-mode 1))
 

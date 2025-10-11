@@ -92,6 +92,21 @@
             (treesit-install-language-grammar lang))))))
 #+end_src
 
+* Treemacs que se mueva con projectile
+#+begin_src emacs-lisp
+(with-eval-after-load 'projectile
+  (add-hook 'projectile-after-switch-project-hook
+            (defun jinxx/treemacs-on-projectile-switch ()
+              (when (require 'treemacs nil t)
+                (if (treemacs-current-visibility)
+                    (treemacs-display-current-project-exclusively)
+                  )))))
+
+(with-eval-after-load 'treemacs
+  (treemacs-follow-mode 1))
+#+end_src
+
+
 * Confirmación
 #+begin_src emacs-lisp
 (message "functions.org cargado")
