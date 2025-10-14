@@ -8,6 +8,7 @@
 
 ;; Helper para setear/actualizar alist sin duplicar
 (defun dcmacs--set-frame-opt (key val)
+  "Helper para setear y actualizar alist sin duplicar."
   (let ((cell (assq key default-frame-alist)))
     (if cell (setcdr cell val)
       (push (cons key val) default-frame-alist))))
